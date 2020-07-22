@@ -1,0 +1,119 @@
+.divH20 {
+	clear: both;
+	height: 20px;
+}
+
+html,
+body {
+	font-size: 0.92rem !important;
+}
+
+body {
+	width: 500px;
+	height: auto;
+}
+
+.content {
+	padding: 15px;
+}
+
+.form-group {
+	margin-bottom: 7px;
+}
+
+.nhapTen label {
+	margin-bottom: 0;
+	margin-top: 3px;
+}
+
+.load_data {
+	width: 100%;
+}
+
+.load_data > * {
+	display: inline-block;
+}
+
+.load_data > select {
+	width: 20%;
+	padding-left: 4px;
+	padding-right: 4px;
+	margin-right: 5px;
+}
+
+.load_data > .txtkhach {
+	width: 32%;
+	padding-left: 4px;
+	padding-right: 4px;
+	margin-right: 5px;
+}
+
+.load_data > #date {
+	width: 38%;
+	padding-left: 4px;
+	padding-right: 4px;
+	margin-right: 5px;
+}
+
+.load_data > .checkbox {
+	width: 20px;
+	height: 20px;
+	margin-top: 6px;
+	position: absolute;
+}
+
+.container-fluid {
+	padding: 0;
+}
+
+.alert-success,
+.alert-info {
+	margin-bottom: 0;
+}
+
+.form-control {
+	padding: 4px 8px;
+}
+
+.panel {
+	margin-bottom: 0;
+}
+
+.col-xs-12,
+.col-xs-6, .them-hanh-khach, .them-excel {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.pr-2 {
+	padding-right: 10px;
+}
+
+label.pr-2 {
+	font-weight: normal;
+}
+
+.ho-ten, .them-hanh-khach {
+	padding-right: 2px;
+	padding-bottom: 2px;
+}
+
+.ngay-sinh,
+.gioi-tinh {
+	padding-right: 2px;
+	padding-left: 2px;
+	padding-bottom: 2px;
+}
+
+.chuc-nang, .them-excel {
+	padding-left: 2px;
+	padding-bottom: 2px;
+	text-align: right;
+}
+
+#txtExcel {
+	min-height: 30px;
+	max-height: 30px;
+	min-width: 252px;
+	max-width: 252px;
+}

@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Đăng nhập</title>
+		<link rel="stylesheet" href="./css/bootstrap.min.css" />
+		<link rel="stylesheet" href="./css/style.css" />
+		<script type="text/javascript" src="./js/jquery.js"></script>
+		<script type="text/javascript" src="./js/config.js"></script>
+		<script type="text/javascript" src="./js/util-classes.js"></script>
+		<script type="text/javascript" src="./js/login-popup.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid">
+			<div id="form-login" style="display: none;">
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="panel-heading">
+							<h3 class="panel-title">Đăng nhập hệ thống</h3>
+						</div>
+						<div class="panel-body">
+							<form class="form">
+								<div class="form-group">
+									<label for="input_username">Email hoặc tên đăng nhập</label>
+									<input
+										class="form-control"
+										id="input_username"
+										placeholder="Nhập tên đăng nhập hoặc email"
+										name="username"
+										required
+									/>
+								</div>
+								<div class="form-group">
+									<label for="input_password">Mật khẩu</label>
+									<input
+										class="form-control"
+										id="input_password"
+										placeholder="Nhập mật khẩu"
+										type="password"
+										name="password"
+										required
+									/>
+								</div>
+								<div class="alert alert-danger" id="errorMsg" style="display: none;"></div>
+								<button class="btn btn-primary" id="btnLogin">Đăng nhập</button>
+							</form>
+							<div class="divH20"></div>
+							<div class="alert alert-warning">Bạn cần đăng nhập để sử dụng công cụ này</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- End login -->
+
+			<div id="welcome" style="display: none;">
+				<div class="alert alert-success">
+					Chào <strong id="username"></strong> <small>(Ngày hết hạn <i id="ngayhethan"></i>)</small>
+					<button class="btn btn-danger btn-xs" style="float: right;" id="btnLogout">Thoát</button>
+				</div>
+				<div class="content">
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="pr-2"><input type="checkbox" id="autoBooking" /> Tự động đặt chỗ</label>
+							</div>
+						</div>
+					</div>
+
+					<!-- NVNhan -->
+					<!-- ///////////// -->
+					<label>Thông tin liên hệ</label>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<input type="text" class="form-control" name="tenkhachhang" id="tenkhachhang" placeholder="Tên khách đặt vé" />
+							</div>
+						</div>
+						<div class="col-xs-6">
+							<div class="form-group">
+								<input type="text" class="form-control" name="sdt" id="sdt" placeholder="Số điện thoại đặt vé" />
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<input type="text" class="form-control" name="diachi" id="diachi" placeholder="Địa chỉ KH (không dấu)" />
+							</div>
+						</div>
+						<div class="col-xs-6">
+							<div class="form-group">
+								<input type="email" class="form-control" name="email" id="email" placeholder="Email KH" />
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-xs-12">
+							<label>Danh sách hành khách</label>
+							<div class="form-group hanh-khach">
+								<div class="row">
+									<div class="col-xs-4 ho-ten">
+										<input type="text" id="ho-ten" class="form-control input-sm" placeholder="Họ tên" />
+									</div>
+									<div class="col-xs-4 ngay-sinh">
+										<input type="date" id="ngay-sinh" class="form-control input-sm" />
+									</div>
+									<div class="col-xs-2 gioi-tinh">
+										<select id="gioi-tinh" class="form-control input-sm">
+											<option value="MR">MR (Quý ông)</option>
+											<option value="MRS">MRS (Quý bà)</option>
+											<option value="MS">MS (Quý cô)</option>
+											<option value="MSTR">MSTR (Bé trai)</option>
+											<option value="MISS">MISS (Bé gái)</option>
+										</select>
+									</div>
+									<div class="col-xs-2 chuc-nang">
+										<input type="checkbox" id="chon" checked />
+										<button class="btn btn-xs btn-danger" id="btnXoaHanhKhach">x</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-xs-4 them-hanh-khach form-group">
+							<button class="btn btn-success btn-sm btn-block" id="btnThemHanhKhach">Thêm hành khách</button>
+						</div>
+						<div class="col-xs-8 them-excel form-group">
+							<div class="input-group">
+								<textarea class="form-control input-sm" placeholder="Paste từ Excel" id="txtExcel"></textarea>
+								<span class="input-group-btn">
+									<button class="btn btn-default btn-sm" id="btnExcel">Go!</button>
+									<button class="btn btn-default btn-sm" id="btnExcelHelp">?</button>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="divH20"></div>
+
+					<div class="row">
+						<div class="col-xs-12 form-group">
+							<button class="btn btn-primary" id="btnTriggerFollow"><strong id="btnTriggerFollowMsg"></strong></button>
+						</div>
+					</div>
+
+					<div class="alert alert-info">Trạng thái: <strong id="followStateMsg"></strong></div>
+				</div>
+
+				<div id="error-page" style="display: none;">
+					<h5 style="text-align: center;">
+						Trang web không được hỗ trợ!
+					</h5>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
