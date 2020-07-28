@@ -4,26 +4,18 @@
 // XỬ LÝ VÀ THÔNG BÁO TỚI USER
 ///////////////////////
 
-// chrome.tabs.query({}, (tabs) => {
-// 	console.log("Chrome tabs", tabs);
-// });
-
 chrome.storage.local.set({ user: null, ttlh: null });
 
 const data = {};
+
 const defaultInitState = {
 	request: {
-		cost_type: "base",
-		time_refresh_in_seconds: 5,
-		max_cost: "500000",
-		plane_cd: "",
-		airlines: ["vn", "vj", "bl"],
+		auto_booking: false,
 		tenkhachhang: "",
 		diachi: "",
 		sdt: "",
 		email: "",
 		hanhkhach: [],
-		booked: [],
 	},
 	result: {
 		follow_state: "idle",
@@ -33,22 +25,18 @@ const defaultInitState = {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	let tabId = request.tab ? request.tab.id : sender.tab.id;
 
-	if (!data[tabId]) {
-		data[tabId] = defaultInitState;
-	}
-	// console.log(`Tab${tabId}-FS.${data[tabId].result.follow_state}`);
-	// console.log(data);
+	if (!data[tabId]) data[tabId] = defaultInitState;
 
 	switch (request.action) {
 		case "get-follow-state":
 			return sendResponse({ follow_state: data[tabId].result.follow_state });
-		case "start-follow":
-			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "waiting_result" } });
-			console.log("after set", data);
+		case "start-fill":
+			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "filling" } });
+			console.log("start fill with data", data[tabId]);
 			// Send data (state) cho script.js ở tab tương ứng
 			chrome.tabs.sendMessage(tabId, { state: data[tabId] }, () => {});
 			return sendResponse({ state: data[tabId] });
-		case "stop-follow":
+		case "stop-fill":
 			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "idle" } });
 			chrome.tabs.sendMessage(tabId, { state: data[tabId] }, () => {});
 			return sendResponse({ state: data[tabId] });
@@ -63,11 +51,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 				{ result: Object.assign({ follow_state: "running" }, {}) }
 			);
 
-			sendResponse({ state: data[tabId] });
-			break;
-		case "found":
-			notifyFound(request.acceptedFlight, request.auto_booking);
-			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "found" } });
 			sendResponse({ state: data[tabId] });
 			break;
 		case "confirm":
@@ -116,55 +99,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			sendResponse({ state: data[tabId] });
 			break;
 	}
-});
-
-let notifyFound = (selectedFlight, auto_booking) => {
-	let audio = new Audio();
-	let playPromise = null;
-	audio.src = "audio/found.ogg";
-	audio.loop = !auto_booking;
-
-	chrome.notifications.clear("found", () => {
-		chrome.notifications.create(
-			"found",
-			{
-				type: "basic",
-				iconUrl: "plane-logo.png",
-				title: `${selectedFlight.from} - ${selectedFlight.to} `,
-				message: `${selectedFlight.date}. CB ${selectedFlight.plane_cd}`,
-				requireInteraction: !auto_booking,
-			},
-
-			function () {
-				playPromise = audio.play();
-			}
-		);
-	});
-
-	chrome.notifications.onClicked.addListener((notificationId) => {
-		console.log("clicked notification", notificationId);
-		playPromise &&
-			playPromise.then((_) => {
-				audio.pause();
-			});
-	});
-
-	chrome.notifications.onClosed.addListener((notificationId) => {
-		console.log("closed notification", notificationId);
-		playPromise &&
-			playPromise.then((_) => {
-				audio.pause();
-			});
-	});
-};
-
-$(function () {
-	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-		if (request.how_id_tab === "ID") {
-			chrome.tabs.query({ active: true }, function (tabs) {
-				chrome.tabs.sendMessage(tabs[0].id, { id_is: tabs[0]["id"] });
-				console.info("Đã send");
-			});
-		}
-	});
 });

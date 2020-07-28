@@ -15,26 +15,21 @@ function checkCheck(hanhkhach) {
 }
 
 const vj = () => {
-	let startFollow = function () {
-		//click button 'Tiep tuc'
-		setTimeout(() => {
-			console.log("click");
-			$("#contentwsb a.rightbutton")[0].click();
-		}, 2000);
-	};
+	const fill = function () {
+		const request = pageState.getState().request;
 
-	let fill = function () {
-		console.log("filling");
+		$("#txtResContact_Name").val(request.tenkhachhang);
+		$("#txtResContact_EMail").val(request.email);
+		$("#txtResContact_Phone").val(request.sdt);
 
-		console.log(pageState.getState());
-		$("#txtPax1_Addr1").val(pageState.getState().request.diachi);
-		$("#txtPax1_City").val(pageState.getState().request.diachi);
+		$("#txtPax1_Addr1").val(request.diachi);
+		$("#txtPax1_City").val(request.diachi);
 		$("#txtPax1_Ctry").val(234); // 234 ~ VN
-		$("#txtPax1_EMail").val(pageState.getState().request.email);
+		$("#txtPax1_EMail").val(request.email);
 
 		$($("span.mobileNumber")[0]).find("div.selected-flag")[0].click();
 		$($("ul.country-list")[0]).find("li[data-dial-code=84]")[0].click();
-		$("#txtPax1_Phone2").val(pageState.getState().request.sdt);
+		$("#txtPax1_Phone2").val(request.sdt);
 		var evt = document.createEvent("KeyboardEvent");
 		evt.initEvent("change", true, true);
 		document.getElementById("txtPax1_Phone2").dispatchEvent(evt);
@@ -42,7 +37,7 @@ const vj = () => {
 		let cnt = 1;
 		let child = $("table#tblPaxCountsInfo td:nth-child(3) span").text();
 		let cntchild = 1;
-		pageState.getState().request.hanhkhach.forEach((value, ind) => {
+		request.hanhkhach.forEach((value, ind) => {
 			if ($(`#txtPax${cnt}_LName`).length > 0) {
 				if (value.gioitinh == "MR") $(`select#txtPax${cnt}_Gender`).val("M");
 				else $(`select#txtPax${cnt}_Gender`).val("F");
@@ -50,7 +45,6 @@ const vj = () => {
 				$(`#txtPax${cnt}_LName`).val(value.hoten.split(" ")[0]);
 				$(`#txtPax${cnt}_FName`).val(value.hoten.split(" ").slice(1).join(" "));
 				cnt++;
-				// response.state.request.hanhkhach[i].check = false;
 			} else if (cntchild <= child) {
 				// Hết người lớn
 				$(`#chkPax${cntchild}_Infant`)[0].click();
@@ -58,22 +52,27 @@ const vj = () => {
 				$(`#txtPax${cntchild}_Infant_LName`).val(value.hoten.split(" ").slice(1).join(" "));
 				cntchild++;
 			}
+			request.hanhkhach[ind].check = false;
 		});
 
 		setTimeout(() => {
-			let request = new RequestDecorator().withFilledAction().build();
-			console.log("filled");
-			chrome.runtime.sendMessage(request, (response) => {
-				$("#contentwsb a.rightbutton")[0].click();
-			});
+			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
+			chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
 		}, 4000);
 	};
 
 	let redirectToPayments = function () {
-		let request = new RequestDecorator().withRedirectedAction().build();
-		chrome.runtime.sendMessage(request, (response) => {
-			window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=";
-		});
+		const request = pageState.getState().request;
+		if (request.auto_booking) {
+			let req = new RequestDecorator(request).withRedirectedAction().build();
+			chrome.runtime.sendMessage(
+				req,
+				(response) => (window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
+			);
+		} else {
+			let req = new RequestDecorator(request).withStopFollowAction().build();
+			chrome.runtime.sendMessage(req, () => {});
+		}
 	};
 
 	let tickDangerousGoods = function () {
@@ -83,13 +82,13 @@ const vj = () => {
 			// neu ko co thanh toan sau thi dung lai
 			$('input[name="lstPmtType"]').filter("[value='5,PL,0,V,0,0,0']").click();
 
-			let request = new RequestDecorator().withConfirmDangerousGoodsAction().build();
+			let request = new RequestDecorator(pageState.getState().request).withConfirmDangerousGoodsAction().build();
 			chrome.runtime.sendMessage(request, (response) => {
 				$("#contentwsb a.leftbutton")[0].click();
 			});
 		} else {
 			// Stop
-			let request = new RequestDecorator().withStopFollowAction().build();
+			let request = new RequestDecorator(pageState.getState().request).withStopFollowAction().build();
 			chrome.runtime.sendMessage(request, (response) => {
 				// $('#contentwsb a.leftbutton')[0].click();
 			});
@@ -99,7 +98,7 @@ const vj = () => {
 	let tickConfirmOrder = function () {
 		$("#chkIAgree")[0].click();
 
-		let request = new RequestDecorator().withConfirmedOrderAction().build();
+		let request = new RequestDecorator(pageState.getState().request).withConfirmedOrderAction().build();
 		chrome.runtime.sendMessage(request, (response) => {
 			console.log("click tiep tuc de ket thuc");
 			setTimeout(() => {
@@ -113,7 +112,7 @@ const vj = () => {
 			var value = $(".ResNumber").html();
 			alert(value);
 			console.log("done cmnr");
-			let request = new RequestDecorator().withStopFollowAction().build();
+			let request = new RequestDecorator(pageState.getState().request).withStopFollowAction().build();
 			chrome.runtime.sendMessage(request, (response) => {});
 		} else {
 			console.log("Cho xac nhan");
@@ -122,15 +121,12 @@ const vj = () => {
 
 	let pageState = new PageState();
 
+	// Thêm listener => trigger from popup
 	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		switch (request.state.request.action) {
-			case "start-follow":
-				console.log("start VJ", pageState.getState());
-				startFollow();
-				return sendResponse();
-			case "stop-follow":
+			case "start-fill":
 				pageState.setState(request.state);
-				stopFollow();
+				fill();
 				return sendResponse();
 		}
 	});
@@ -147,17 +143,9 @@ const vj = () => {
 		);
 	};
 
+	// Chạy 1 lần khi reload trang => Các bước tool tự hoạt động và load trang
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
-			case "idle":
-				break;
-			case "error":
-				break;
-			case "waiting_result":
-				$(document).ready(function () {
-					fill();
-				});
-				break;
 			case "filled":
 				redirectToPayments();
 				break;

@@ -51,22 +51,17 @@ class RequestDecorator {
 	}
 
 	withStartFollowAction() {
-		this.request = Object.assign({}, this.request, { action: "start-follow" });
+		this.request = Object.assign({}, this.request, { action: "start-fill" });
 		return this;
 	}
 
 	withStopFollowAction() {
-		this.request = Object.assign({}, this.request, { action: "stop-follow" });
+		this.request = Object.assign({}, this.request, { action: "stop-fill" });
 		return this;
 	}
 
 	withGotResultAction() {
 		this.request = Object.assign({}, this.request, { action: "got-result" });
-		return this;
-	}
-
-	withFoundAction() {
-		this.request = Object.assign({}, this.request, { action: "found" });
 		return this;
 	}
 
@@ -126,36 +121,5 @@ class RequestDecorator {
 }
 
 isValidPlaneCd = (expected, actual) => {
-	// if (!expected) return true;
-	// let arr = expected.split(',');
-	// if (arr.length === 1) {
-	//     return arr[0].toUpperCase() === actual.toUpperCase();
-	// }
-
-	// for (let i = 0; i < arr.length; i++) {
-	//     if(arr[i].toUpperCase() === actual) {
-	//         return true;
-	//     }
-	// }
-
-	// return false;
 	return !expected || expected == "" || expected.split(",").indexOf(actual) != -1;
 };
-//thuật toán đồng bộ hóa
-// $(function(){
-// 	$("#btnTriggerFollow").click(function(){
-// 		var array = [];
-// 		id_tab ="";
-// 		chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-// 		id_tab = tabs[0].id; $(".nhapTen input.txtkhach").each(function(index){
-// 		var a = $(this).val();
-// 		console.info(a);
-// 		array.push(a);
-// 		});
-// 		chrome.storage.sync.set({data:{data:array,id_tab: id_tab}}); });
-
-// 	});
-// });
-/**
- * Created by windluffy on 1/17/18.
- */
