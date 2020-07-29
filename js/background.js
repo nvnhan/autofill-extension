@@ -46,9 +46,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		case "confirm":
 			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "confirm" } });
 			break;
-		case "final-confirm":
-			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "final-confirm" } });
-			break;
 		case "set-state":
 			console.log("set state", request);
 			data[tabId] = Object.assign({}, data[tabId], { request: request });

@@ -23,7 +23,16 @@
 	"content_scripts": [
 		{
 			"js": ["js/jquery.js", "js/config.js", "js/util-classes.js", "js/script.js"],
-			"matches": ["*://muadi.com.vn/*","*://onlinebookingticket.vn/*", "*://onlineairticket.vn/*", "*://onlineticket.com.vn/*", "*://vnabooking.vn/*", "*://booking.vietjetair.com/*"]
+			"matches": [
+				"*://xuatve.vn/*",
+				"*://muadi.com.vn/*",
+				"*://onlinebookingticket.vn/*",
+				"*://onlineairticket.vn/*",
+				"*://bookingticket.vn/*",
+				"*://onlineticket.com.vn/*",
+				"*://vnabooking.vn/*",
+				"*://booking.vietjetair.com/*"
+			]
 		}
 	]
 }

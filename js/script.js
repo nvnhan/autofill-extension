@@ -616,6 +616,79 @@ const vnabooking = () => {
 		}
 	});
 };
+/**
+ * Xuatve.vn
+ */
+const xuatve = () => {
+	const start = () => {
+		const request = pageState.getState().request;
+		const req = new RequestDecorator(request).withFillingAction().build(); // Gửi request về background
+		chrome.runtime.sendMessage(req, (response) => $("#ContentPlaceHolder1_btnContinue")[0].click()); // Click tiếp tục để đến trang fill
+	};
+
+	const fill = () => {
+		const request = pageState.getState().request;
+		$("#ContentPlaceHolder1_txtFirstName").val(request.tenkhachhang.split(" ")[0]);
+		$("#ContentPlaceHolder1_txtLastName").val(request.tenkhachhang.split(" ").slice(1).join(" "));
+		$("#ContentPlaceHolder1_txtPhone").val(request.sdt);
+		$("#ContentPlaceHolder1_txtEmail").val(request.email);
+
+		let cntA = 0;
+		let cntC = 0;
+		request.hanhkhach.forEach((value, ind) => {
+			if (checkAdult(value) && $("#ContentPlaceHolder1_rptADT_ddlGender_" + cntA).length > 0) {
+				$("#ContentPlaceHolder1_rptADT_ddlGender_" + cntA).val(value.gioitinh === "MR" ? 0 : 1);
+				$("#ContentPlaceHolder1_rptADT_txtHo_" + cntA).val(value.hoten.split(" ")[0]);
+				$("#ContentPlaceHolder1_rptADT_txtDemTen_" + cntA).val(value.hoten.split(" ").slice(1).join(" "));
+				cntA++;
+				request.hanhkhach[ind].check = false;
+			} else if (checkChild(value) && $("#ContentPlaceHolder1_rptCHD_ddlGender_" + cntC).length > 0) {
+				$("#ContentPlaceHolder1_rptCHD_ddlGender_" + cntC).val(value.gioitinh === "MSTR" ? 0 : 1);
+				$("#ContentPlaceHolder1_rptCHD_txtHo_" + cntC).val(value.hoten.split(" ")[0]);
+				$("#ContentPlaceHolder1_rptCHD_txtDemTen_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
+				//TODO: Ngày sinh chưa chuẩn
+				$("#ContentPlaceHolder1_rptCHD_txtBD_" + cntC).val(value.ngaysinh);
+				cntC++;
+				request.hanhkhach[ind].check = false;
+			}
+		});
+
+		setTimeout(() => {
+			const req = new RequestDecorator(request).withStopFollowAction().build(); // Gửi request về background
+			chrome.runtime.sendMessage(req, (response) => request.auto_booking && $("#btnContinue")[0].click()); // Click tiếp tục
+		}, 4000);
+	};
+
+	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+		switch (request.state.request.action) {
+			case "start-fill":
+				pageState.setState(request.state);
+				start();
+				return sendResponse();
+		}
+	});
+
+	let loadCurrentStateTab = (callback) => {
+		chrome.runtime.sendMessage(
+			{
+				action: "get-state",
+			},
+			(response) => {
+				pageState.setState(response.state);
+				callback && callback(response.state);
+			}
+		);
+	};
+
+	loadCurrentStateTab((state) => {
+		switch (state.result.follow_state) {
+			case "filling":
+				fill();
+				break;
+			default:
+		}
+	});
+};
 
 if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
 	console.log("apply muadi.com.vn & onlinebookingticket.vn");
@@ -629,4 +702,7 @@ if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
 } else if (/vietjetair/gi.test(url)) {
 	console.log("apply vietjetair.com");
 	vj();
+} else if (/xuatve/gi.test(url)) {
+	console.log("apply xuatve.vn");
+	xuatve();
 }
