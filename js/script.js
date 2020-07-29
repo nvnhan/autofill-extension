@@ -15,6 +15,12 @@ function checkCheck(hanhkhach) {
 }
 
 const vj = () => {
+	const start = () => {
+		const request = pageState.getState().request;
+		const req = new RequestDecorator(request).withFillingAction().build(); // Gửi request về background
+		chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục để đến trang fill
+	};
+
 	const fill = function () {
 		const request = pageState.getState().request;
 
@@ -55,27 +61,25 @@ const vj = () => {
 			request.hanhkhach[ind].check = false;
 		});
 
-		setTimeout(() => {
-			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
-		}, 4000);
-	};
-
-	let redirectToPayments = function () {
-		const request = pageState.getState().request;
-		if (request.auto_booking) {
-			let req = new RequestDecorator(request).withRedirectedAction().build();
-			chrome.runtime.sendMessage(
-				req,
-				(response) => (window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
-			);
-		} else {
-			let req = new RequestDecorator(request).withStopFollowAction().build();
+		if (request.auto_booking)
+			setTimeout(() => {
+				const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
+				chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
+			}, 4000);
+		else {
+			const req = new RequestDecorator(request).withStopFollowAction().build();
 			chrome.runtime.sendMessage(req, () => {});
 		}
 	};
 
-	let tickDangerousGoods = function () {
+	const redirectToPayments = function () {
+		const request = pageState.getState().request;
+
+		const req = new RequestDecorator(request).withRedirectedAction().build();
+		chrome.runtime.sendMessage(req, (response) => (window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid="));
+	};
+
+	const tickDangerousGoods = function () {
 		$("#dangerous_goods_check")[0].click();
 
 		if ($('input[name="lstPmtType"]').filter("[value='5,PL,0,V,0,0,0']").length) {
@@ -95,7 +99,7 @@ const vj = () => {
 		}
 	};
 
-	let tickConfirmOrder = function () {
+	const tickConfirmOrder = function () {
 		$("#chkIAgree")[0].click();
 
 		let request = new RequestDecorator(pageState.getState().request).withConfirmedOrderAction().build();
@@ -107,7 +111,7 @@ const vj = () => {
 		});
 	};
 
-	let done = function () {
+	const done = function () {
 		if ($(".ResNumber").length) {
 			var value = $(".ResNumber").html();
 			alert(value);
@@ -119,19 +123,19 @@ const vj = () => {
 		}
 	};
 
-	let pageState = new PageState();
+	const pageState = new PageState();
 
 	// Thêm listener => trigger from popup
 	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		switch (request.state.request.action) {
 			case "start-fill":
 				pageState.setState(request.state);
-				fill();
+				start();
 				return sendResponse();
 		}
 	});
 
-	let loadCurrentStateTab = (callback) => {
+	const loadCurrentStateTab = (callback) => {
 		chrome.runtime.sendMessage(
 			{
 				action: "get-state",
@@ -146,6 +150,9 @@ const vj = () => {
 	// Chạy 1 lần khi reload trang => Các bước tool tự hoạt động và load trang
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
+			case "filling":
+				fill();
+				break;
 			case "filled":
 				redirectToPayments();
 				break;
@@ -1605,8 +1612,8 @@ if (/vetot\.com\.vn/gi.test(url) || /holavietnam\.com\.vn/gi.test(url)) {
 } else if (/onlineairticket\.vn/gi.test(url) || /bookingticket\.vn/gi.test(url)) {
 	console.log("apply onlineairticket & bookingticket.vn");
 	onlineAirTicket();
-} else if (/vnabooking/gi.test(url)) {
-	console.log("apply http://vnabooking.com.vn");
+} else if (/vnabooking/gi.test(url) || /onlineticket/gi.test(url)) {
+	console.log("apply vnabooking & onlineticket");
 	vnabooking();
 } else if (/vietjetair/gi.test(url)) {
 	console.log("apply http://vietjetair.com");

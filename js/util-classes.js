@@ -60,28 +60,13 @@ class RequestDecorator {
 		return this;
 	}
 
-	withGotResultAction() {
-		this.request = Object.assign({}, this.request, { action: "got-result" });
-		return this;
-	}
-
-	withTryAgainAction() {
-		this.request = Object.assign({}, this.request, { action: "try-again" });
-		return this;
-	}
-
-	withReloadAction() {
-		this.request = Object.assign({}, this.request, { action: "reload" });
-		return this;
-	}
-
-	withAcceptedFlight(acceptedFlight) {
-		this.request = Object.assign({}, this.request, { acceptedFlight: acceptedFlight });
-		return this;
-	}
-
 	withConfirmAction() {
 		this.request = Object.assign({}, this.request, { action: "confirm" });
+		return this;
+	}
+
+	withFillingAction() {
+		this.request = Object.assign({}, this.request, { action: "filling" });
 		return this;
 	}
 

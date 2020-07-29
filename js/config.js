@@ -1,6 +1,11 @@
 const Config = {
 	state: {
 		// follow engine state
+		waiting: {
+			title: "Đang đợi",
+			value: "waiting",
+		},
+
 		filling: {
 			title: "Đang điền thông tin",
 			value: "filling",
