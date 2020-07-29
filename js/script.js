@@ -171,733 +171,63 @@ const vj = () => {
 		}
 	});
 };
-
-const vetot = () => {
-	const pageState = new PageState();
-
-	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-		switch (request.state.request.action) {
-			case "start-follow":
-				pageState.setState(request.state);
-				startFollow();
-				return sendResponse();
-			case "stop-follow":
-				pageState.setState(request.state);
-				stopFollow();
-				return sendResponse();
-		}
-	});
-
-	/***
-	 * Return true if the result is loaded, otherwise false
-	 */
-	let isDOMResultLoaded = () => {
-		return $(".IBESRMain").length > 0;
-	};
-
-	let isPageError = () => {
-		return $("#IBEErrorMsg").length > 0;
-	};
-
-	/***
-	 * Process the result search and return result object
-	 * @returns {{vendor: string, from, to, date, cost: {total, base}, max_cost: {total, base}}}
-	 */
-	let readBookingInfoResult = (rowIndex) => {
-		return {
-			vendor: "vetot.com.vn",
-			from: getDepartureFrom(rowIndex),
-			to: getDepartureTo(),
-			date: getDepartureDate(),
-			plane_cd: getPlaneCd(rowIndex),
-			cost: getCost(rowIndex),
-		};
-	};
-
-	let getPlaneCd = (rowIndex) => {
-		return $($(".FlightItem .FlightNumber")[rowIndex]).text().trim();
-	};
-
-	let getDepartureFrom = () => {
-		return $("#lblDepartureFrom").text();
-	};
-
-	let getDepartureTo = () => {
-		return $("#lblDepartureTo").text();
-	};
-
-	let getDepartureDate = () => {
-		return $("#lblDepartureDate").text();
-	};
-
-	let getCost = (rowIndex) => {
-		let row = $(".FlightItem .Price")[rowIndex];
-		return {
-			total: $(row).data("price").replace(/\./g, ""),
-			base: $(row).data("price-base").replace(/\./g, ""),
-		};
-	};
-
-	let getRequestData = function () {
-		return pageState.getState.bind(pageState)()["request"];
-	};
-
-	let startFollow = () => {
-		checkDOM();
-	};
-
-	let stopFollow = () => {
-		if (tryAgainAction) clearTimeout(tryAgainAction);
-	};
-
-	let checkDOM = () => {
-		/***
-		 *
-		 * Interval for checking result loaded
-		 */
-		let checkResultLoadedInterval = setInterval(() => {
-			if (isDOMResultLoaded()) {
-				clearInterval(checkResultLoadedInterval);
-
-				if (!isPageError()) {
-					let request = new RequestDecorator(getRequestData()).withGotResultAction().build();
-					chrome.runtime.sendMessage(request, (response) => {
-						pageState.setState(response.state);
-						let acceptedFlights = lookupAcceptFlights(request);
-						console.log(acceptedFlights);
-						if (acceptedFlights.length > 0) {
-							foundAcceptedFLights(acceptedFlights);
-						} else {
-							tryAgainAction = setTimeout(tryAgain, pageState.getState().request.time_refresh_in_seconds * 1000);
-						}
-					});
-				}
-			} else {
-				console.log("Not yet!");
-			}
-		}, Config.time_check_dom_in_milliseconds);
-	};
-
-	let tryFollowAgain = () => {
-		checkDOM();
-	};
-
-	let tryAgainAction = null;
-
-	let tryAgain = () => {
-		console.log("tryagain");
-		let request = Object.assign(getRequestData(), { action: "try-again" });
-		chrome.runtime.sendMessage(request, () => {
-			$(".IBESearchButton")[0].click();
-		});
-	};
-
-	let foundAcceptedFLights = (acceptedFlights) => {
-		let request = new RequestDecorator(getRequestData()).withFoundAction().withAcceptedFlight(acceptedFlights[0]).build();
-		chrome.runtime.sendMessage(request, (response) => {
-			pageState.setState(response.state);
-
-			if (response.state.request.auto_booking) {
-				selectFirstAcceptedFlight(acceptedFlights[0].itemIndex);
-				book();
-			}
-		});
-	};
-
-	let book = () => {
-		setTimeout(() => {
-			$("#btnBook").click();
-		}, Config.time_wait_to_book_in_milliseconds);
-	};
-
-	let selectFirstAcceptedFlight = (rowIndex) => {
-		$(".FlightItem .IBESelectFlight")[rowIndex].click();
-	};
-
-	let lookupAcceptFlights = (request) => {
-		let itemCount = $(".FlightItem").length;
-		let acceptedFlights = [];
-		for (let i = 0; i < itemCount; i++) {
-			let actualResult = readBookingInfoResult(i);
-			if (isAcceptedResult(request, actualResult)) {
-				actualResult.itemIndex = i;
-				acceptedFlights.push(actualResult);
-			}
-		}
-
-		return acceptedFlights;
-	};
-
-	let isAcceptedResult = function (expectedResult, actualResult) {
-		let minCostActual = expectedResult.cost_type === "base" ? actualResult.cost.base : actualResult.cost.total;
-		let validPlaneCd = isValidPlaneCd(expectedResult.plane_cd, actualResult.plane_cd);
-
-		return parseFloat(minCostActual) <= parseFloat(expectedResult.max_cost) && validPlaneCd;
-	};
-
-	let loadCurrentStateTab = (callback) => {
-		chrome.runtime.sendMessage(
-			{
-				action: "get-state",
-			},
-			(response) => {
-				pageState.setState(response.state);
-				callback && callback(response.state);
-			}
-		);
-	};
-
-	let isIdle = (state) => {
-		let currentState = state || myState;
-		return currentState.result.follow_state == "idle";
-	};
-
-	let isFound = (state) => {
-		let currentState = state || myState;
-		return currentState.result.follow_state == "found";
-	};
-
-	let triggerFollow = () => {
-		if (isIdle() || isFound()) {
-			startFollow();
-		} else {
-			stopFollow();
-		}
-	};
-
-	//init content script
-	(() => {
-		loadCurrentStateTab((state) => {
-			switch (state.result.follow_state) {
-				case "idle":
-					break;
-				case "error":
-					break;
-				case "refresh":
-					tryFollowAgain();
-				default:
-			}
-
-			// when document ready
-			$(document).ready(() => {});
-		});
-	})();
-};
-
+/**
+ * Muadi.com.vn
+ */
 const muadi = () => {
-	let isRunning = false;
-	let foundItems = [];
-	let tryAgainAction = null;
-
-	// VietNamAirline
-	let vietnamAirline = (nextStep, checked) => {
-		if (!checked) {
-			nextStep && nextStep();
-			return;
-		}
-		console.log("Start VN");
-		let getPlaneCd = ($row) => {
-			let $plane_cd_div = $($row.find("div.item")[1]);
-			return $plane_cd_div.find("a b").text();
-		};
-
-		let getPriceTable = ($row) => {
-			let options = $row.find("select option");
-			if (!options.length) return null;
-			let priceTable = [];
-			for (let iOption = 0; iOption < options.length; iOption++) {
-				let $option = $(options[iOption]);
-				let optionObj = {};
-				optionObj.price_base = $option.data("fare");
-				if (optionObj.price_base == "-1")
-					// Với những cái E gạch --------, không có giá
-					continue;
-
-				let strValue = $option.val().substr(0, 2);
-				optionObj.seat_remaining = strValue[1];
-				optionObj.seat_type = strValue[0];
-				priceTable.push(optionObj);
-			}
-
-			return priceTable;
-		};
-
-		let parseDOM = () => {
-			let items = [];
-			let rows = $("#airlines_depart_VN .line_item");
-			for (let iRow = 0; iRow < rows.length; iRow++) {
-				let item = {};
-				let $row = $(rows[iRow]);
-				item.plane_cd = getPlaneCd($row);
-				item.price_table = getPriceTable($row);
-				item.$row = $row;
-				items.push(item);
-			}
-
-			return items;
-		};
-
-		let find = (items) => {
-			let request = pageState.getState().request;
-			let result = null;
-			for (let iRow = 0; iRow < items.length; iRow++) {
-				let item = items[iRow];
-				if (!item.price_table) continue;
-				for (
-					// Giá mặc định là tăng dần
-					let iOption = 0;
-					iOption < item.price_table.length;
-					iOption++
-				) {
-					let option = item.price_table[iOption];
-					if (
-						option.price_base > 0 &&
-						option.price_base <= request.max_cost &&
-						option.seat_remaining > 0 &&
-						isValidPlaneCd(request.plane_cd, item.plane_cd)
-					) {
-						result = {
-							plane_cd: item.plane_cd,
-							option: option,
-							airline_type: "vn",
-							$row: item.$row,
-						};
-						break;
-					}
-				}
-				if (result) break;
-			}
-
-			return result;
-		};
-
-		let isDOMResultLoaded = () => {
-			return $("#airlines_depart_VN .line_item").length > 0;
-		};
-
-		let isEmptyResult = () => {
-			return $("#airlines_depart_VN .line_noback_highlight").length > 0;
-		};
-
-		let checkDOM = () => {
-			let checkResultLoadedInterval = setInterval(() => {
-				if (isDOMResultLoaded() || isEmptyResult()) {
-					console.log("vn empty", isEmptyResult());
-					clearInterval(checkResultLoadedInterval);
-
-					if (isEmptyResult()) {
-						nextStep && nextStep();
-					} else {
-						let parsedItems = parseDOM();
-						let found = find(parsedItems);
-						if (!found) {
-						} else {
-							console.log("VN Found", found);
-							foundFlight(found);
-						}
-						// Tìm được hay ko đều chuyển sang bước tiếp: tìm ở jets và vj
-						nextStep && nextStep();
-					}
-				} else {
-					console.log("Not yet!");
-				}
-			}, Config.time_check_dom_in_milliseconds);
-		};
-
-		checkDOM();
-	}; // End VN
-
-	// Dùng cho cả VJ và jets
-	let jetstar = (vj, jets, nextStep, checked) => {
-		if (!checked) {
-			nextStep && nextStep();
-			return;
-		}
-		console.log("Begin VJ & Jetstar");
-
-		let isDOMResultLoaded = () => {
-			return $("#airlines_depart_VJ .line_item").length > 0;
-		};
-
-		let getPlaneCd = ($row) => {
-			let $plane_cd_div = $($row.find("div.item")[1]);
-			return $plane_cd_div.text().trim();
-		};
-
-		let parseDOM = () => {
-			let items = [];
-			let rows = $("#airlines_depart_VJ .line_item");
-			for (let iRow = 0; iRow < rows.length; iRow++) {
-				let item = {};
-				let $row = $(rows[iRow]);
-				item.plane_cd = getPlaneCd($row);
-
-				let strPrice = $($row.find(".item")[5])
-					.text()
-					.replace(/VND|,| /gi, "");
-				item.price_base = parseInt(strPrice);
-				item.$row = $row;
-				items.push(item);
-			}
-
-			return items;
-		};
-
-		let find = (items) => {
-			let request = pageState.getState().request;
-			for (let iRow = 0; iRow < items.length; iRow++) {
-				let item = items[iRow];
-				if (item.price_base <= 0) continue;
-				if (item.price_base > 0 && item.price_base <= request.max_cost && isValidPlaneCd(request.plane_cd, item.plane_cd)) {
-					// Tìm được cb thỏa đk giá
-					if (item.plane_cd.indexOf("BL") >= 0 && jets)
-						// Nếu cb là Jets và có chọn jets
-						return {
-							plane_cd: item.plane_cd,
-							option: {
-								price_base: item.price_base,
-							},
-							airline_type: "bl",
-							$row: item.$row,
-						};
-					else if (item.plane_cd.indexOf("VJ") >= 0 && vj)
-						return {
-							plane_cd: item.plane_cd,
-							option: {
-								price_base: item.price_base,
-							},
-							airline_type: "vj",
-							$row: item.$row,
-						};
-				}
-			}
-
-			return null;
-		};
-
-		let isEmptyResult = () => {
-			return $("#airlines_depart_VJ .line_noback_highlight").length > 0 || $("#airlines_depart_VJ .line_noback").length > 0;
-		};
-
-		let checkDOM = () => {
-			let checkResultLoadedInterval = setInterval(() => {
-				if (isDOMResultLoaded() || isEmptyResult()) {
-					clearInterval(checkResultLoadedInterval);
-					if (isEmptyResult()) {
-						nextStep && nextStep();
-					} else {
-						let parsedItems = parseDOM();
-						let found = find(parsedItems);
-						if (!found) {
-						} else {
-							console.log("VJ & BL Found", found);
-							foundFlight(found);
-						}
-						nextStep && nextStep();
-					}
-				} else {
-					console.log("Not yet!");
-				}
-			}, Config.time_check_dom_in_milliseconds);
-		};
-
-		checkDOM();
+	const start = () => {
+		const request = pageState.getState().request;
+		const req = new RequestDecorator(request).withFillingAction().build(); // Gửi request về background
+		chrome.runtime.sendMessage(req, (response) => $("#ListBooking_btnSubmit")[0].click()); // Click tiếp tục để đến trang fill
 	};
 
-	let getRequestData = function () {
-		return pageState.getState.bind(pageState)()["request"];
-	};
-
-	let foundFlight = (foundItem) => {
-		foundItems.push(foundItem);
-		console.log("Found items", foundItems);
-		//notifyFound(foundItem);
-		//
-		// if (pageState.getState().request.auto_booking) {
-		//     let divSelect = foundItem.$row.find('div.item')[6];
-		//     $(divSelect).find('input')[0].click();
-		//     $('#ChildPage_ListBooking_btnSubmit').click();
-		// }
-	};
-
-	let getFlight = (foundItem) => {
-		foundItem.from = $($("#flightselection").children("div").children("div")[1]).children("b").text();
-		foundItem.to = $($("#flightselection").children("div").children("div")[2]).children("b").text();
-		foundItem.date = $($("#flightselection").children("div").children("div")[0]).text();
-		return foundItem;
-	};
-
-	let notifyFound = (foundItem) => {
-		let request = new RequestDecorator(getRequestData()).withFoundAction().withAcceptedFlight(foundItem).build();
-		chrome.runtime.sendMessage(request, (response) => {});
-	};
-
-	let switchToVietjetAirJetstar = () => {
-		$($("#airlines_menu_dep .airlinetab")[1]).find("a")[0].click();
-	};
-
-	let switchToVietnamAirline = () => {
-		$($("#airlines_menu_dep .airlinetab")[0]).find("a")[0].click();
-	};
-
-	let isOnlyVietnamAirline = () => {
-		return $("#airlines_menu_dep .airlinetab").length === 0;
-	};
-
-	let tryAgain = () => {
-		console.log("tryagain");
-		let request = new RequestDecorator(getRequestData()).withTryAgainAction().build();
-		chrome.runtime.sendMessage(request, () => {
-			window.location.href = window.location.href.replace("&error=seat_error", "");
-		});
-	};
-
-	let stopFollow = () => {
-		isRunning = false;
-		if (tryAgainAction) clearTimeout(tryAgainAction);
-	};
-
-	let wait = (time_in_millis) => {
-		return new Promise((resolve) => {
-			setTimeout(resolve, time_in_millis);
-		});
-	};
-
-	let getMinResult = (items, airlineTypes) => {
-		console.log("atypes", airlineTypes);
-		let ret = null;
-		let minPrice = Number.MAX_SAFE_INTEGER;
-		for (let i = 0; i < items.length; i++) {
-			if (items[i].option.price_base < minPrice && airlineTypes.indexOf(items[i].airline_type) >= 0) {
-				ret = items[i];
-				minPrice = ret.option.price_base;
-			}
-		}
-
-		return getFlight(ret);
-	};
-
-	/***
-	 * select combobox adult by number of tickets
-	 * @param numberTickets > 0
-	 */
-	let selectAdult = function (numberTickets) {
-		let id = "#ListBooking_ddlADT option:eq(" + numberTickets + ")";
-		console.log("selectAdult -> id", id);
-		$(id).prop("selected", true);
-	};
-
-	/***
-	 * select combobox children by number of tickets
-	 * @param numberTickets >= 0
-	 */
-	let selectChildren = function (numberTickets) {
-		let id = "#ListBooking_ddlCHD option:eq(" + numberTickets + ")";
-		console.log("selectChildren -> id", id);
-		$(id).prop("selected", true);
-	};
-
-	// sang giai đoạn nhập thông tin
-	let finalStep = () => {
-		const checkedAirlines = pageState.getState().request.airlines;
-		if (tryAgainAction) clearTimeout(tryAgainAction);
-		if (foundItems.length > 0) {
-			let result = getMinResult(foundItems, checkedAirlines);
-			if (result) {
-				let divSelect = result.$row.find("div.item")[6];
-				if (divSelect)
-					// Click chọn hàng này
-					$(divSelect).find("input")[0].click();
-
-				if (pageState.getState().request.auto_booking) {
-					////////////////////////////////////
-					//if (result.airline_type === "vn") {
-					// Số người lớn
-					//let expectedAdults = $($('#ChildPage_ListBooking_ddlADT_title .ddTitleText')[0]).text();
-					let expectedAdults = pageState.getState().request.hanhkhach.filter(checkAdult).filter(checkCheck).length;
-					// Số trẻ em
-					//let expectedChildren = $($('#ChildPage_ListBooking_ddlCHD_title .ddTitleText')[0]).text();
-					let expectedChildren = pageState.getState().request.hanhkhach.filter(checkChild).filter(checkCheck).length;
-					// Số ghế có thể đặt
-					let actual = result.option.seat_remaining;
-
-					expectedAdults = parseInt(expectedAdults ? expectedAdults : 0);
-					expectedChildren = parseInt(expectedChildren ? expectedChildren : 0);
-					actual = parseInt(actual);
-
-					let selectAdt = 0;
-					let selectChd = 0;
-					if (actual < expectedAdults + expectedChildren) {
-						let missingTickets = expectedChildren + expectedAdults - actual;
-						if (missingTickets >= expectedChildren) {
-							selectChd = 0;
-							selectAdt = actual;
-						} else {
-							selectAdt = expectedAdults;
-							selectChd = expectedChildren - missingTickets;
-						}
-					} else {
-						selectAdt = expectedAdults;
-						selectChd = expectedChildren;
-					}
-					// Chọn trên trang web
-					selectAdult(selectAdt);
-					selectChildren(selectChd);
-					/////////////////////////
-					// Set index booked
-					//
-					let cntA = 0; // Count adult
-					let cntC = 0; // Cout child
-					pageState.getState().request.hanhkhach.forEach((value, ind) => {
-						if (value.check) {
-							if (checkAdult(value) && cntA < selectAdt) {
-								pageState.getState().request.booked.push(ind); // Hành khách thứ i đưuọc chọn
-								cntA++;
-							} else if (checkChild(value) && cntC < selectChd) {
-								pageState.getState().request.booked.push(ind); // Hành khách thứ i đưuọc chọn
-								cntC++;
-							}
-						}
-					});
-					//}
-					///////////////////////////////////////////////////////////////////
-
-					const request = new RequestDecorator(getRequestData()).withAcceptedFlight(result).withConfirmAction().build();
-					chrome.runtime.sendMessage(request, (response) => {});
-					$("#ListBooking_btnSubmit").click();
-				} else {
-					notifyFound(result);
-				}
-			} else {
-				doReload();
-			}
-		} else {
-			doReload();
-		}
-	};
-
-	let startFollow = () => {
-		isRunning = true;
-		foundItems = [];
-		const checkedAirlines = pageState.getState().request.airlines;
-		if (isOnlyVietnamAirline()) {
-			vietnamAirline(finalStep, checkedAirlines.indexOf("vn") >= 0);
-		} else {
-			switchToVietnamAirline();
-			wait(500).then(() => {
-				vietnamAirline(() => {
-					// Next step = không tìm thấy kết quả phù hợp ở tab VN
-					switchToVietjetAirJetstar(); // Chuyển sang tab giá rẻ: VJ, Jets
-					wait(500).then(() => {
-						// Đợi
-						jetstar(
-							checkedAirlines.indexOf("vj") >= 0,
-							checkedAirlines.indexOf("bl") >= 0,
-							finalStep,
-							checkedAirlines.indexOf("bl") >= 0 || checkedAirlines.indexOf("vj") >= 0
-						);
-					});
-				}, checkedAirlines.indexOf("vn") >= 0);
-			}); // end wait
-		} // end else
-	};
-
-	let doReload = () => {
-		if (isRunning) {
-			tryAgainAction = setTimeout(tryAgain, pageState.getState().request.time_refresh_in_seconds * 1000);
-		}
-	};
-
-	const pageState = new PageState();
-
-	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-		switch (request.state.request.action) {
-			case "start-follow":
-				pageState.setState(request.state);
-				console.log("start follow muadi", pageState.getState());
-				startFollow();
-				return sendResponse();
-			case "stop-follow":
-				pageState.setState(request.state);
-				stopFollow();
-				return sendResponse();
-		}
-	});
-
-	let confirmBooking = () => {
-		// State = Final: Fill in main method
-		// else:
+	const fill = () => {
+		const request = pageState.getState().request;
 		let isFail = $("#ChildPage_ListBooking_divShowError").length > 0;
 		if (isFail) {
-			const request = new RequestDecorator(getRequestData()).withTryAgainAction().build();
-			chrome.runtime.sendMessage(request, (response) => {});
-
-			isRunning = true;
-			doReload();
+			const req = new RequestDecorator(request).withStopFollowAction().build();
+			chrome.runtime.sendMessage(req, (response) => {});
 		} else {
-			//$('#ChildPage_ctl09_btnConfirm').click();
+			setTimeout(() => {
+				$("#ctl10_txtCustomerName").val(request.tenkhachhang);
+				$("#ctl10_txtCustomerAddress").val(request.diachi);
+				$("#ctl10_txtCustomerPhone").val(request.sdt);
+				$("#ctl10_txtCustomerEmail").val(request.email);
+
+				let cntA = 1;
+				let cntC = 1;
+				request.hanhkhach.forEach((value, ind) => {
+					if (checkAdult(value) && $("#firstname_adt_" + cntA).length > 0) {
+						$("#title_adt_" + cntA).val(value.gioitinh.toLowerCase());
+						$("#firstname_adt_" + cntA).val(value.hoten.split(" ")[0]);
+						$("#lastname_adt_" + cntA).val(value.hoten.split(" ").slice(1).join(" "));
+						cntA++;
+						request.hanhkhach[ind].check = false;
+					} else if (checkChild(value) && $("#firstname_chd_" + cntC).length > 0) {
+						$("#title_chd_" + cntC).val(value.gioitinh.toLowerCase());
+						$("#firstname_chd_" + cntC).val(value.hoten.split(" ")[0]);
+						$("#lastname_chd_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
+						cntC++;
+						request.hanhkhach[ind].check = false;
+					}
+				});
+
+				setTimeout(() => {
+					const req = new RequestDecorator(request).withStopFollowAction().build(); // Gửi request về background
+					chrome.runtime.sendMessage(req, (response) => request.auto_booking && $("#ctl10_btnConfirm")[0].click()); // Click tiếp tục
+				}, 4000);
+			}, 1000);
 		}
 	};
 
-	// Đang chờ giữ chỗ???
-	let isWaiting = () => {
-		return $(".flight_header").length > 0 && $(".flight_header").text().indexOf("chờ") >= 0; //  Vui lòng chờ tới khi chỗ của bạn được giữ...
-	};
-	// Đã giữ chỗ xong
-	let isDone = () => {
-		return $(".flight_header").length > 0 && ($(".flight_header").text().indexOf("xong") >= 0 || $(".flight_header").text().indexOf("công") >= 0);
-	};
-	// Đã giữ chỗ xong
-	let isFail = () => {
-		return $(".flight_header2").length > 0 && $(".flight_header2").text().indexOf("Không") >= 0;
-	};
-
-	let finalConfirmBooking = () => {
-		// Sau khi điền tên và ấn nút, đc xử lý ở hàm chính phía dưới
-		// Check xem có thành công không
-		wait(10000).then(() => {
-			console.log("final confirm booking");
-
-			let checkResultLoadedInterval = setInterval(() => {
-				if (!isWaiting()) {
-					clearInterval(checkResultLoadedInterval);
-					if (isDone() && !isFail()) {
-						let flight = getRequestData().acceptedFlight;
-						notifyFound(flight);
-
-						// Bỏ check những hành khách đã được đặt
-						let maxInd = 0;
-						pageState.getState().request.booked.forEach((ind) => {
-							pageState.getState().request.hanhkhach[ind].check = false;
-							maxInd = ind;
-						});
-						pageState.getState().request.booked = [];
-
-						maxInd++;
-						if (pageState.getState().request.hanhkhach.length > maxInd) {
-							const request = new RequestDecorator(getRequestData()).withTryAgainAction().build();
-							chrome.runtime.sendMessage(request, (response) => {});
-							isRunning = true;
-						} else {
-							const request = new RequestDecorator(getRequestData()).withStopFollowAction().build();
-							chrome.runtime.sendMessage(request, (response) => {});
-							isRunning = false;
-						}
-
-						// Tìm chuyến khác
-						// $("#FlightLeftInfo_btnTryOther").click();
-					} else {
-						console.log("Không giữ được");
-						const request = new RequestDecorator(getRequestData()).withStopFollowAction().build();
-						chrome.runtime.sendMessage(request, (response) => {});
-						isRunning = false;
-					}
-				} else {
-					console.log("still waiting!!!");
-				}
-			}, Config.time_check_dom_in_milliseconds);
-		});
-	};
+	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+		switch (request.state.request.action) {
+			case "start-fill":
+				pageState.setState(request.state);
+				start();
+				return sendResponse();
+		}
+	});
 
 	let loadCurrentStateTab = (callback) => {
 		chrome.runtime.sendMessage(
@@ -912,25 +242,12 @@ const muadi = () => {
 	};
 
 	loadCurrentStateTab((state) => {
-		console.log("muadi -> state.result.follow_state", state.result.follow_state);
 		switch (state.result.follow_state) {
-			case "idle":
+			case "filling":
+				fill();
 				break;
-			case "error":
-				break;
-			case "confirm":
-				confirmBooking();
-				break;
-			case "final-confirm":
-				finalConfirmBooking();
-				break;
-			case "refresh":
-				startFollow();
 			default:
 		}
-
-		// when document ready
-		$(document).ready(() => {});
 	});
 };
 
@@ -1300,84 +617,9 @@ const vnabooking = () => {
 	});
 };
 
-if (/vetot\.com\.vn/gi.test(url) || /holavietnam\.com\.vn/gi.test(url)) {
-	vetot();
-} else if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
-	chrome.runtime.sendMessage(
-		{
-			action: "get-state",
-		},
-		(response) => {
-			if (response.state.result.follow_state === "confirm" && $("#ctl10_btnConfirm").length > 0) {
-				setTimeout(() => {
-					// Vào được trang đặt chỗ
-					////////////////
-					/////
-					console.log("start auto fill", response);
-					$("#ctl10_txtCustomerName").val(response.state.request.tenkhachhang);
-					$("#ctl10_txtCustomerAddress").val(response.state.request.diachi);
-					$("#ctl10_txtCustomerPhone").val(response.state.request.sdt);
-					$("#ctl10_txtCustomerEmail").val(response.state.request.email);
-
-					let cntA = 1;
-					let cntC = 1;
-					if (response.state.request.booked.length > 0) {
-						// Nếu có danh sách đánh dấu những người đc chọn (ở VN)
-						response.state.request.booked.forEach((i) => {
-							if (checkAdult(response.state.request.hanhkhach[i]) && $("#firstname_adt_" + cntA).length > 0) {
-								$("#title_adt_" + cntA).val(response.state.request.hanhkhach[i].gioitinh.toLowerCase());
-								$("#firstname_adt_" + cntA).val(response.state.request.hanhkhach[i].hoten.split(" ")[0]);
-								$("#lastname_adt_" + cntA).val(response.state.request.hanhkhach[i].hoten.split(" ").slice(1).join(" "));
-								cntA++;
-								// response.state.request.hanhkhach[i].check = false;
-							} else if (checkChild(response.state.request.hanhkhach[i]) && $("#firstname_chd_" + cntC).length > 0) {
-								$("#title_chd_" + cntC).val(response.state.request.hanhkhach[i].gioitinh.toLowerCase());
-								$("#firstname_chd_" + cntC).val(response.state.request.hanhkhach[i].hoten.split(" ")[0]);
-								$("#lastname_chd_" + cntC).val(response.state.request.hanhkhach[i].hoten.split(" ").slice(1).join(" "));
-								cntC++;
-								// response.state.request.hanhkhach[i].check = false;
-							}
-						});
-						//  response.state.request.booked = [];
-					} else {
-						// Điền danh sách hành khách
-						response.state.request.booked = [];
-						response.state.request.hanhkhach.forEach((value, ind) => {
-							if (value.check) {
-								if (checkAdult(value) && $("#firstname_adt_" + cntA).length > 0) {
-									$("#title_adt_" + cntA).val(value.gioitinh.toLowerCase());
-									$("#firstname_adt_" + cntA).val(value.hoten.split(" ")[0]);
-									$("#lastname_adt_" + cntA).val(value.hoten.split(" ").slice(1).join(" "));
-									cntA++;
-									response.state.request.booked.push(ind);
-									// response.state.request.hanhkhach[ind].check = false;
-								} else if (checkChild(value) && $("#firstname_chd_" + cntC).length > 0) {
-									$("#title_chd_" + cntC).val(value.gioitinh.toLowerCase());
-									$("#firstname_chd_" + cntC).val(value.hoten.split(" ")[0]);
-									$("#lastname_chd_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
-									cntC++;
-									response.state.request.booked.push(ind);
-									// response.state.request.hanhkhach[ind].check = false;
-								}
-							}
-						});
-					}
-					//////////////
-					////////// Gửi lại state
-					let request = Object.assign(response.state.request, {
-						action: "final-confirm",
-					});
-					console.log("send state after fill muadi", request);
-					chrome.runtime.sendMessage(request, () => {});
-
-					$("#ctl10_btnConfirm").click();
-				}, 500);
-			} else {
-				console.log("apply muadi");
-				muadi();
-			}
-		}
-	);
+if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
+	console.log("apply muadi.com.vn & onlinebookingticket.vn");
+	muadi();
 } else if (/onlineairticket\.vn/gi.test(url) || /bookingticket\.vn/gi.test(url)) {
 	console.log("apply onlineairticket & bookingticket.vn");
 	onlineAirTicket();
@@ -1385,6 +627,6 @@ if (/vetot\.com\.vn/gi.test(url) || /holavietnam\.com\.vn/gi.test(url)) {
 	console.log("apply vnabooking & onlineticket");
 	vnabooking();
 } else if (/vietjetair/gi.test(url)) {
-	console.log("apply http://vietjetair.com");
+	console.log("apply vietjetair.com");
 	vj();
 }
