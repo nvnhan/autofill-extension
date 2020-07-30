@@ -57,11 +57,11 @@ const renderFollowBar = (state) => {
 
 const renderListHanhKhach = (hanhkhachs) => {
 	let s = "";
-	stt = 0;
 	for (let i = 0; i < hanhkhachs.length; i++) {
+		stt = i + 1;
 		s +=
 			"<div class='row'><div class='col-xs-1 stt'>" +
-			++stt +
+			stt +
 			"</div><div class='col-xs-3 ho-ten'><input type='text' id='ho-ten' class='form-control input-sm' placeholder='Họ tên' value='" +
 			hanhkhachs[i].hoten +
 			"' /></div>";
