@@ -95,12 +95,19 @@ label.pr-2 {
 	font-weight: normal;
 }
 
-.ho-ten,
+.stt,
 .them-hanh-khach {
 	padding-right: 2px;
 	padding-bottom: 2px;
 }
 
+.stt {
+	text-align: center;
+	line-height: 30px;
+	font-weight: bold;
+}
+
+.ho-ten,
 .ngay-sinh,
 .gioi-tinh,
 .hl-di,
@@ -120,6 +127,6 @@ label.pr-2 {
 #txtExcel {
 	min-height: 30px;
 	max-height: 30px;
-	min-width: 352px;
-	max-width: 352px;
+	min-width: 392px;
+	max-width: 392px;
 }

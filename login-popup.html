@@ -62,7 +62,7 @@
 					<div class="row">
 						<div class="col-xs-6">
 							<div class="form-group">
-								<label class="pr-2"><input type="checkbox" id="autoBooking" /> Tự động đặt chỗ</label>
+								<label class="pr-2"><input type="checkbox" id="autoBooking" /> Tự động đặt chỗ sau khi điền</label>
 							</div>
 						</div>
 					</div>
@@ -73,7 +73,13 @@
 					<div class="row">
 						<div class="col-xs-6">
 							<div class="form-group">
-								<input type="text" class="form-control" name="tenkhachhang" id="tenkhachhang" placeholder="Tên khách đặt vé" />
+								<input
+									type="text"
+									class="form-control"
+									name="tenkhachhang"
+									id="tenkhachhang"
+									placeholder="Tên khách đặt vé (có thể Paste)"
+								/>
 							</div>
 						</div>
 						<div class="col-xs-6">
@@ -100,11 +106,11 @@
 							<label>Danh sách hành khách</label>
 							<div class="form-group hanh-khach">
 								<div class="row">
-									<div class="col-xs-4 ho-ten">
-										<input type="text" id="ho-ten" class="form-control input-sm" placeholder="Họ tên" />
+									<div class="col-xs-1 stt">
+										1
 									</div>
-									<div class="col-xs-3 ngay-sinh">
-										<input type="date" id="ngay-sinh" class="form-control input-sm" />
+									<div class="col-xs-3 ho-ten">
+										<input type="text" id="ho-ten" class="form-control input-sm" placeholder="Họ tên" />
 									</div>
 									<div class="col-xs-2 gioi-tinh">
 										<select id="gioi-tinh" class="form-control input-sm">
@@ -114,6 +120,9 @@
 											<option value="MSTR">MSTR (Bé trai)</option>
 											<option value="MISS">MISS (Bé gái)</option>
 										</select>
+									</div>
+									<div class="col-xs-3 ngay-sinh">
+										<input type="date" id="ngay-sinh" class="form-control input-sm" />
 									</div>
 									<div class="col-xs-1 hl-di">
 										<input type="number" id="hl-di" class="form-control input-sm" />
@@ -138,7 +147,6 @@
 							<div class="input-group">
 								<textarea class="form-control input-sm" placeholder="Paste từ Excel" id="txtExcel"></textarea>
 								<span class="input-group-btn">
-									<button class="btn btn-default btn-sm" id="btnExcel">Go!</button>
 									<button class="btn btn-default btn-sm" id="btnExcelHelp">?</button>
 								</span>
 							</div>
