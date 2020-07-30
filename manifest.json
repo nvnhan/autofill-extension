@@ -7,7 +7,7 @@
 		"default_popup": "login-popup.html"
 	},
 
-	"permissions": ["http://*/*", "https://*/*", "activeTab", "tabs", "notifications", "storage"],
+	"permissions": ["http://*/*", "https://*/*", "activeTab", "tabs", "storage"],
 
 	"icons": {
 		"32": "./image/logo.png",
@@ -24,6 +24,7 @@
 		{
 			"js": ["js/jquery.js", "js/config.js", "js/util-classes.js", "js/script.js"],
 			"matches": [
+				"*://www.bambooairways.com/*",
 				"*://xuatve.vn/*",
 				"*://muadi.com.vn/*",
 				"*://onlinebookingticket.vn/*",

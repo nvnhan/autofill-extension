@@ -55,6 +55,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "filling" } });
 			sendResponse({ state: data[tabId] });
 			break;
+
+		case "filled":
+			console.log("filled bg");
+			data[tabId] = Object.assign({}, data[tabId], { request: request }, { result: { follow_state: "filled" } });
+			sendResponse({ state: data[tabId] });
+			break;
+
 		// Tool VietJet
 		case "redirected":
 			console.log("redirected bg");

@@ -7,15 +7,26 @@
 const url = window.location.href;
 const pageState = new PageState();
 
-function checkAdult(hanhkhach) {
-	return hanhkhach.gioitinh != "MISS" && hanhkhach.gioitinh != "MSTR";
-}
-function checkChild(hanhkhach) {
-	return hanhkhach.gioitinh == "MISS" || hanhkhach.gioitinh == "MSTR";
-}
-function checkCheck(hanhkhach) {
-	return hanhkhach.check;
-}
+const checkAdult = (hanhkhach) => hanhkhach.gioitinh != "MISS" && hanhkhach.gioitinh != "MSTR";
+const checkChild = (hanhkhach) => hanhkhach.gioitinh == "MISS" || hanhkhach.gioitinh == "MSTR";
+const checkCheck = (hanhkhach) => hanhkhach.check;
+
+const convertDate = (s) => {
+	const ar = s.split("-");
+	return ar[2] + "/" + ar[1] + "/" + ar[0];
+};
+
+const loadCurrentStateTab = (callback) => {
+	chrome.runtime.sendMessage(
+		{
+			action: "get-state",
+		},
+		(response) => {
+			pageState.setState(response.state);
+			callback && callback(response.state);
+		}
+	);
+};
 
 /**
  * Vietjetair
@@ -68,16 +79,24 @@ const vj = () => {
 		});
 
 		setTimeout(() => {
-			const req = new RequestDecorator(request).withStopFollowAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, (response) => request.auto_booking && $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
+			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
+			chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
 		}, 4000);
 	};
 
 	const redirectToPayments = function () {
 		const request = pageState.getState().request;
 
-		const req = new RequestDecorator(request).withRedirectedAction().build();
-		chrome.runtime.sendMessage(req, (response) => (window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid="));
+		if (request.auto_booking) {
+			let req = new RequestDecorator(request).withRedirectedAction().build();
+			chrome.runtime.sendMessage(
+				req,
+				(response) => (window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
+			);
+		} else {
+			let req = new RequestDecorator(request).withStopFollowAction().build();
+			chrome.runtime.sendMessage(req, () => {});
+		}
 	};
 
 	const tickDangerousGoods = function () {
@@ -133,18 +152,6 @@ const vj = () => {
 				return sendResponse();
 		}
 	});
-
-	const loadCurrentStateTab = (callback) => {
-		chrome.runtime.sendMessage(
-			{
-				action: "get-state",
-			},
-			(response) => {
-				pageState.setState(response.state);
-				callback && callback(response.state);
-			}
-		);
-	};
 
 	// Chạy 1 lần khi reload trang => Các bước tool tự hoạt động và load trang
 	loadCurrentStateTab((state) => {
@@ -228,18 +235,6 @@ const muadi = () => {
 				return sendResponse();
 		}
 	});
-
-	let loadCurrentStateTab = (callback) => {
-		chrome.runtime.sendMessage(
-			{
-				action: "get-state",
-			},
-			(response) => {
-				pageState.setState(response.state);
-				callback && callback(response.state);
-			}
-		);
-	};
 
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
@@ -500,8 +495,6 @@ const onlineAirTicket = () => {
 		}
 	};
 
-	const pageState = new PageState();
-
 	// Chạy trước khi document ready
 	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		console.log("request", request);
@@ -517,18 +510,6 @@ const onlineAirTicket = () => {
 				return sendResponse();
 		}
 	});
-
-	let loadCurrentStateTab = (callback) => {
-		chrome.runtime.sendMessage(
-			{
-				action: "get-state",
-			},
-			(response) => {
-				pageState.setState(response.state);
-				callback && callback(response.state);
-			}
-		);
-	};
 
 	loadCurrentStateTab((state) => {
 		console.log("load current state tab");
@@ -595,18 +576,6 @@ const vnabooking = () => {
 		}
 	});
 
-	let loadCurrentStateTab = (callback) => {
-		chrome.runtime.sendMessage(
-			{
-				action: "get-state",
-			},
-			(response) => {
-				pageState.setState(response.state);
-				callback && callback(response.state);
-			}
-		);
-	};
-
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
 			case "filling":
@@ -646,8 +615,7 @@ const xuatve = () => {
 				$("#ContentPlaceHolder1_rptCHD_ddlGender_" + cntC).val(value.gioitinh === "MSTR" ? 0 : 1);
 				$("#ContentPlaceHolder1_rptCHD_txtHo_" + cntC).val(value.hoten.split(" ")[0]);
 				$("#ContentPlaceHolder1_rptCHD_txtDemTen_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
-				//TODO: Ngày sinh chưa chuẩn
-				$("#ContentPlaceHolder1_rptCHD_txtBD_" + cntC).val(value.ngaysinh);
+				$("#ContentPlaceHolder1_rptCHD_txtBD_" + cntC).val(convertDate(value.ngaysinh));
 				cntC++;
 				request.hanhkhach[ind].check = false;
 			}
@@ -668,22 +636,97 @@ const xuatve = () => {
 		}
 	});
 
-	let loadCurrentStateTab = (callback) => {
-		chrome.runtime.sendMessage(
-			{
-				action: "get-state",
-			},
-			(response) => {
-				pageState.setState(response.state);
-				callback && callback(response.state);
-			}
-		);
+	loadCurrentStateTab((state) => {
+		switch (state.result.follow_state) {
+			case "filling":
+				fill();
+				break;
+			default:
+		}
+	});
+};
+/**
+ * Bambooairway.com
+ */
+const bb = () => {
+	const start = () => {
+		const request = pageState.getState().request;
+		const req = new RequestDecorator(request).withFillingAction().build(); // Gửi request về background
+		chrome.runtime.sendMessage(req, () => $("#proceed")[0].click()); // Click tiếp tục để đến trang fill
 	};
+
+	const fill = () => {
+		const request = pageState.getState().request;
+		$("#contact-suffix").val("MR");
+		$("#contact-surname").val(request.tenkhachhang.split(" ")[0]);
+		$("#contact-firstname").val(request.tenkhachhang.split(" ").slice(1).join(" "));
+		$("#contact-phone-number").val(request.sdt);
+		$("#contact-email").val(request.email);
+		$("#contact-street").val(request.diachi);
+		$("#contact-city").val(request.diachi);
+
+		let cntA = 0;
+		let cntC = 0;
+		request.hanhkhach.forEach((value, ind) => {
+			if (checkAdult(value) && $("#passengerAdult-" + cntA + "-suffix").length > 0) {
+				$("#passengerAdult-" + cntA + "-suffix").val(value.gioitinh);
+				$("#passengerAdult-" + cntA + "-surname").val(value.hoten.split(" ")[0]);
+				$("#passengerAdult-" + cntA + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
+				cntA++;
+				request.hanhkhach[ind].check = false;
+			} else if (checkChild(value) && $("#passengerChild-" + cntC + "-suffix").length > 0) {
+				$("#passengerChild-" + cntC + "-suffix").val(value.gioitinh);
+				$("#passengerChild-" + cntC + "-surname").val(value.hoten.split(" ")[0]);
+				$("#passengerChild-" + cntC + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
+				$("#passengerChild-" + cntC + "-birthday").val(convertDate(value.ngaysinh));
+				cntC++;
+				request.hanhkhach[ind].check = false;
+			}
+		});
+
+		setTimeout(() => {
+			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
+			chrome.runtime.sendMessage(req, () => $("#proceed")[0].click()); // Click tiếp tục
+		}, 4000);
+	};
+
+	const otherAction = () => {
+		const request = pageState.getState().request;
+		$(".extra-checkbox")[1].click();
+
+		//TODO: Check hành lý
+
+		const req = new RequestDecorator(request).withRedirectedAction().build();
+		chrome.runtime.sendMessage(req, () => $("#proceed")[0].click());
+	};
+
+	const tickPayments = () => {
+		//TODO: Tick trả sau & confirm
+
+		// Nếu tự động thanh toán thì ấn nút còn ko thì stop
+		let request = new RequestDecorator(pageState.getState().request).withStopFollowAction().build();
+		chrome.runtime.sendMessage(request);
+	};
+
+	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+		switch (request.state.request.action) {
+			case "start-fill":
+				pageState.setState(request.state);
+				start();
+				return sendResponse();
+		}
+	});
 
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
 			case "filling":
 				fill();
+				break;
+			case "filled":
+				otherAction();
+				break;
+			case "redirected":
+				tickPayments();
 				break;
 			default:
 		}
@@ -705,4 +748,7 @@ if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
 } else if (/xuatve/gi.test(url)) {
 	console.log("apply xuatve.vn");
 	xuatve();
+} else if (/bambooairways/gi.test(url)) {
+	console.log("apply bambooairways.com");
+	bb();
 }

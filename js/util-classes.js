@@ -69,6 +69,11 @@ class RequestDecorator {
 		this.request = Object.assign({}, this.request, { action: "filling" });
 		return this;
 	}
+	
+	withFilledAction() {
+		this.request = Object.assign({}, this.request, { action: "filled" });
+		return this;
+	}
 
 	withRedirectedAction() {
 		this.request = Object.assign({}, this.request, { action: "redirected" });
