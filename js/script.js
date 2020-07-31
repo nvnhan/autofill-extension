@@ -35,7 +35,7 @@ const vj = () => {
 	const start = () => {
 		const request = pageState.getState().request;
 		const req = new RequestDecorator(request).withFillingAction().build(); // Gửi request về background
-		chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục để đến trang fill
+		chrome.runtime.sendMessage(req, () => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục để đến trang fill
 	};
 
 	const fill = function () {
@@ -87,7 +87,7 @@ const vj = () => {
 	const redirectToPayments = function () {
 		const request = pageState.getState().request;
 
-		if (request.auto_booking) {
+		if (1) {
 			let req = new RequestDecorator(request).withRedirectedAction().build();
 			chrome.runtime.sendMessage(
 				req,
@@ -102,20 +102,15 @@ const vj = () => {
 	const tickDangerousGoods = function () {
 		$("#dangerous_goods_check")[0].click();
 
-		if ($('input[name="lstPmtType"]').filter("[value='5,PL,0,V,0,0,0']").length) {
-			// neu ko co thanh toan sau thi dung lai
-			$('input[name="lstPmtType"]').filter("[value='5,PL,0,V,0,0,0']").click();
+		if ($('input[name="lstPmtType"]').filter("[value='63,PL6,0,V,0,0,0']").length) {
+			$('input[name="lstPmtType"]').filter("[value='63,PL6,0,V,0,0,0']").click();
 
 			let request = new RequestDecorator(pageState.getState().request).withConfirmDangerousGoodsAction().build();
-			chrome.runtime.sendMessage(request, (response) => {
-				$("#contentwsb a.leftbutton")[0].click();
-			});
+			chrome.runtime.sendMessage(request, () => $("#contentwsb a.leftbutton")[0].click());
 		} else {
-			// Stop
+			// neu ko co thanh toan sau thi dung lai
 			let request = new RequestDecorator(pageState.getState().request).withStopFollowAction().build();
-			chrome.runtime.sendMessage(request, (response) => {
-				// $('#contentwsb a.leftbutton')[0].click();
-			});
+			chrome.runtime.sendMessage(request);
 		}
 	};
 
@@ -123,12 +118,11 @@ const vj = () => {
 		$("#chkIAgree")[0].click();
 
 		let request = new RequestDecorator(pageState.getState().request).withConfirmedOrderAction().build();
-		chrome.runtime.sendMessage(request, (response) => {
-			console.log("click tiep tuc de ket thuc");
-			setTimeout(() => {
-				$("#tblBackCont a")[1].click();
-			}, 1000);
-		});
+		if (request.auto_booking) chrome.runtime.sendMessage(request, () => setTimeout(() => $("#tblBackCont a")[1].click(), 1000));
+		else {
+			request = new RequestDecorator(pageState.getState().request).withStopFollowAction().build();
+			chrome.runtime.sendMessage(request);
+		}
 	};
 
 	const done = function () {
@@ -475,11 +469,14 @@ const onlineAirTicket = () => {
 			////////////////////////////
 			// Kiểm tra xem danh sách còn ko
 			let doit = false;
-			pageState.getState().request.hanhkhach.filter(checkCheck).forEach((hk) => {
-				if (hk.check) {
-					doit = true;
-				}
-			});
+			pageState
+				.getState()
+				.request.hanhkhach.filter(checkCheck)
+				.forEach((hk) => {
+					if (hk.check) {
+						doit = true;
+					}
+				});
 			// Re load lại trang
 			if (doit) {
 				isRunning = true;
