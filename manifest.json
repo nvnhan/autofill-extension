@@ -32,7 +32,8 @@
 				"*://bookingticket.vn/*",
 				"*://onlineticket.com.vn/*",
 				"*://vnabooking.vn/*",
-				"*://booking.vietjetair.com/*"
+				"*://booking.vietjetair.com/*",
+				"*://agents.vietjetair.com/*"
 			]
 		}
 	]

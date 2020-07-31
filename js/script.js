@@ -41,9 +41,12 @@ const vj = () => {
 	const fill = function () {
 		const request = pageState.getState().request;
 
-		$("#txtResContact_Name").val(request.tenkhachhang);
-		$("#txtResContact_EMail").val(request.email);
-		$("#txtResContact_Phone").val(request.sdt);
+		if (/booking/gi.test(url)) {
+			// Nếu ở trang web (ko phải đại lý) thì mới thêm
+			$("#txtResContact_Name").val(request.tenkhachhang);
+			$("#txtResContact_EMail").val(request.email);
+			$("#txtResContact_Phone").val(request.sdt);
+		}
 
 		$("#txtPax1_Addr1").val(request.diachi);
 		$("#txtPax1_City").val(request.diachi);
@@ -80,7 +83,7 @@ const vj = () => {
 
 		setTimeout(() => {
 			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, (response) => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
+			chrome.runtime.sendMessage(req, () => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
 		}, 4000);
 	};
 
@@ -91,11 +94,14 @@ const vj = () => {
 			let req = new RequestDecorator(request).withRedirectedAction().build();
 			chrome.runtime.sendMessage(
 				req,
-				(response) => (window.location.href = "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
+				() =>
+					(window.location.href = /booking/gi.test(url)
+						? "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid="
+						: "https://agents.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
 			);
 		} else {
 			let req = new RequestDecorator(request).withStopFollowAction().build();
-			chrome.runtime.sendMessage(req, () => {});
+			chrome.runtime.sendMessage(req);
 		}
 	};
 
