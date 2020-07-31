@@ -698,11 +698,14 @@ const bb = () => {
 	};
 
 	const tickPayments = () => {
-		//TODO: Tick trả sau & confirm
+		const req = pageState.getState().request;
+		let request = new RequestDecorator(req).withStopFollowAction().build();
 
-		// Nếu tự động thanh toán thì ấn nút còn ko thì stop
-		let request = new RequestDecorator(pageState.getState().request).withStopFollowAction().build();
-		chrome.runtime.sendMessage(request);
+		if ($("#idPL").length) {
+			// Nếu có thanh toán sau thì ấn nút
+			$("#idPL").click();
+			chrome.runtime.sendMessage(request, () => req.auto_booking && $("#overlay-PayLater-b2b button")[1].click());
+		} else chrome.runtime.sendMessage(request);
 	};
 
 	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
