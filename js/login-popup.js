@@ -31,6 +31,7 @@ const getRequestData = () => {
 
 	return {
 		auto_booking: $("#autoBooking").prop("checked"),
+		fill_stop: $("#fillStop").prop("checked"),
 		tenkhachhang: $("#tenkhachhang").val(),
 		diachi: $("#diachi").val(),
 		sdt: $("#sdt").val(),

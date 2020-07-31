@@ -11,6 +11,7 @@ const data = {};
 const defaultInitState = {
 	request: {
 		auto_booking: false,
+		fill_stop: false,
 		tenkhachhang: "",
 		diachi: "",
 		sdt: "",

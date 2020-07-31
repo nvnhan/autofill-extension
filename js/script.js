@@ -82,27 +82,27 @@ const vj = () => {
 		});
 
 		setTimeout(() => {
-			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, () => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
+			if (request.fill_stop) {
+				let req = new RequestDecorator(request).withStopFollowAction().build(); // Dừng lại
+				chrome.runtime.sendMessage(req);
+			} else {
+				let req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
+				chrome.runtime.sendMessage(req, () => $("#contentwsb a.rightbutton")[0].click()); // Click tiếp tục
+			}
 		}, 4000);
 	};
 
 	const redirectToPayments = function () {
 		const request = pageState.getState().request;
 
-		if (1) {
-			let req = new RequestDecorator(request).withRedirectedAction().build();
-			chrome.runtime.sendMessage(
-				req,
-				() =>
-					(window.location.href = /booking/gi.test(url)
-						? "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid="
-						: "https://agents.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
-			);
-		} else {
-			let req = new RequestDecorator(request).withStopFollowAction().build();
-			chrome.runtime.sendMessage(req);
-		}
+		let req = new RequestDecorator(request).withRedirectedAction().build();
+		chrome.runtime.sendMessage(
+			req,
+			() =>
+				(window.location.href = /booking/gi.test(url)
+					? "https://booking.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid="
+					: "https://agents.vietjetair.com/Payments.aspx?lang=vi&st=sl&sesid=")
+		);
 	};
 
 	const tickDangerousGoods = function () {
@@ -221,7 +221,7 @@ const muadi = () => {
 
 				setTimeout(() => {
 					const req = new RequestDecorator(request).withStopFollowAction().build(); // Gửi request về background
-					chrome.runtime.sendMessage(req, (response) => request.auto_booking && $("#ctl10_btnConfirm")[0].click()); // Click tiếp tục
+					chrome.runtime.sendMessage(req, () => request.auto_booking && $("#ctl10_btnConfirm")[0].click()); // Click tiếp tục
 				}, 4000);
 			}, 1000);
 		}
@@ -566,7 +566,7 @@ const vnabooking = () => {
 
 		setTimeout(() => {
 			const req = new RequestDecorator(request).withStopFollowAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, (response) => request.auto_booking && $(".card-footer:first .btn-lg")[0].click()); // Click tiếp tục
+			chrome.runtime.sendMessage(req, () => request.auto_booking && $(".card-footer:first .btn-lg")[0].click()); // Click tiếp tục
 		}, 4000);
 	};
 
@@ -626,7 +626,7 @@ const xuatve = () => {
 
 		setTimeout(() => {
 			const req = new RequestDecorator(request).withStopFollowAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, (response) => request.auto_booking && $("#btnContinue")[0].click()); // Click tiếp tục
+			chrome.runtime.sendMessage(req, () => request.auto_booking && $("#btnContinue")[0].click()); // Click tiếp tục
 		}, 4000);
 	};
 
@@ -688,8 +688,13 @@ const bb = () => {
 		});
 
 		setTimeout(() => {
-			const req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
-			chrome.runtime.sendMessage(req, () => $("#proceed")[0].click()); // Click tiếp tục
+			if (request.fill_stop) {
+				let req = new RequestDecorator(request).withStopFollowAction().build(); // Dừng lại
+				chrome.runtime.sendMessage(req);
+			} else {
+				let req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
+				chrome.runtime.sendMessage(req, () => $("#proceed")[0].click()); // Click tiếp tục
+			}
 		}, 4000);
 	};
 
