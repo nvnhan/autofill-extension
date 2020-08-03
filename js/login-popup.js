@@ -28,6 +28,7 @@ const getRequestData = () => {
 			});
 		}
 	});
+	console.log(hanhkhachs)
 
 	return {
 		auto_booking: $("#autoBooking").prop("checked"),

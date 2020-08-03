@@ -203,6 +203,7 @@ const muadi = () => {
 
 				let cntA = 1;
 				let cntC = 1;
+				let cntI = 1;
 				request.hanhkhach.filter(checkCheck).forEach((value, ind) => {
 					if (checkAdult(value) && $("#firstname_adt_" + cntA).length > 0) {
 						$("#title_adt_" + cntA).val(value.gioitinh.toLowerCase());
@@ -215,6 +216,12 @@ const muadi = () => {
 						$("#firstname_chd_" + cntC).val(value.hoten.split(" ")[0]);
 						$("#lastname_chd_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
 						cntC++;
+						request.hanhkhach[ind].check = false;
+					} else if (checkChild(value) && $("#firstname_inf_" + cntI).length > 0) {
+						$("#title_inf_" + cntI).val(value.gioitinh.toLowerCase());
+						$("#firstname_inf_" + cntI).val(value.hoten.split(" ")[0]);
+						$("#lastname_inf_" + cntI).val(value.hoten.split(" ").slice(1).join(" "));
+						cntI++;
 						request.hanhkhach[ind].check = false;
 					}
 				});
