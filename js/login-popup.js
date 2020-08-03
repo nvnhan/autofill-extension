@@ -47,6 +47,7 @@ const getRequestData = () => {
  */
 const renderFollowBar = (state) => {
 	$("#autoBooking").prop("checked", state.request.auto_booking);
+	$("#fillStop").prop("checked", state.request.fill_stop);
 
 	$("#tenkhachhang").val(state.request.tenkhachhang);
 	$("#diachi").val(state.request.diachi);
