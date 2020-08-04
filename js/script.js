@@ -64,7 +64,7 @@ const vj = () => {
 		let child = $("table#tblPaxCountsInfo td:nth-child(3) span").text();
 		let cntchild = 1;
 		request.hanhkhach.forEach((value, ind) => {
-			if (!hanhkhach.check) continue;
+			if (!value.check) return;
 			if ($(`#txtPax${cnt}_LName`).length > 0) {
 				if (value.gioitinh == "MR") $(`select#txtPax${cnt}_Gender`).val("M");
 				else $(`select#txtPax${cnt}_Gender`).val("F");
@@ -206,7 +206,7 @@ const muadi = () => {
 				let cntC = 1;
 				let cntI = 1;
 				request.hanhkhach.forEach((value, ind) => {
-					if (!hanhkhach.check) continue;
+					if (!value.check) return;
 					if (checkAdult(value) && $("#firstname_adt_" + cntA).length > 0) {
 						$("#title_adt_" + cntA).val(value.gioitinh.toLowerCase());
 						$("#firstname_adt_" + cntA).val(value.hoten.split(" ")[0]);
@@ -562,7 +562,7 @@ const vnabooking = () => {
 
 		let cnt = 0;
 		request.hanhkhach.forEach((value, ind) => {
-			if (!hanhkhach.check) continue;
+			if (!value.check) return;
 			if ($(`#InfoPassener_Passengers_${cnt}__Gender`).length > 0) {
 				$(`#InfoPassener_Passengers_${cnt}__Gender`).val(value.gioitinh);
 				$(`#InfoPassener_Passengers_${cnt}__Name`).val(value.hoten);
@@ -618,7 +618,7 @@ const xuatve = () => {
 		let cntA = 0;
 		let cntC = 0;
 		request.hanhkhach.forEach((value, ind) => {
-			if (!hanhkhach.check) continue;
+			if (!value.check) return;
 			if (checkAdult(value) && $("#ContentPlaceHolder1_rptADT_ddlGender_" + cntA).length > 0) {
 				$("#ContentPlaceHolder1_rptADT_ddlGender_" + cntA).val(value.gioitinh === "MR" ? 0 : 1);
 				$("#ContentPlaceHolder1_rptADT_txtHo_" + cntA).val(value.hoten.split(" ")[0]);
@@ -682,7 +682,7 @@ const bb = () => {
 		let cntA = 0;
 		let cntC = 0;
 		request.hanhkhach.forEach((value, ind) => {
-			if (!hanhkhach.check) continue;
+			if (!value.check) return;
 			if (checkAdult(value) && $("#passengerAdult-" + cntA + "-suffix").length > 0) {
 				$("#passengerAdult-" + cntA + "-suffix").val(value.gioitinh);
 				$("#passengerAdult-" + cntA + "-surname").val(value.hoten.split(" ")[0]);
