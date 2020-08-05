@@ -28,7 +28,7 @@ const getRequestData = () => {
 			});
 		}
 	});
-	console.log(hanhkhachs)
+	console.log(hanhkhachs);
 
 	return {
 		auto_booking: $("#autoBooking").prop("checked"),
@@ -75,6 +75,8 @@ const renderListHanhKhach = (hanhkhachs) => {
 		s += '<option value="MS"' + (hanhkhachs[i].gioitinh == "MS" && "selected") + ">MS (Quý cô)</option>";
 		s += '<option value="MSTR"' + (hanhkhachs[i].gioitinh == "MSTR" && "selected") + ">MSTR (Bé trai)</option>";
 		s += '<option value="MISS"' + (hanhkhachs[i].gioitinh == "MISS" && "selected") + ">MISS (Bé gái)</option>";
+		s += '<option value="eMSTR"' + (hanhkhachs[i].gioitinh == "eMSTR" && "selected") + ">eMSTR (Em bé trai)</option>";
+		s += '<option value="eMISS"' + (hanhkhachs[i].gioitinh == "eMISS" && "selected") + ">eMISS (Em bé gái)</option>";
 		s += "</select></div>";
 
 		s +=
@@ -289,7 +291,7 @@ $(document).ready(() => {
 				++stt +
 				"</div>" +
 				"<div class='col-xs-3 ho-ten'><input type='text' id='ho-ten' class='form-control input-sm' placeholder='Họ tên' /></div>" +
-				"<div class='col-xs-2 gioi-tinh'><select id='gioi-tinh' class='form-control input-sm'><option value='MR'>MR (Quý ông)</option><option value='MRS'>MRS (Quý bà)</option><option value='MS'>MS (Quý cô)</option><option value='MSTR'>MSTR (Bé trai)</option><option value='MISS'>MISS (Bé gái)</option></select></div>" +
+				"<div class='col-xs-2 gioi-tinh'><select id='gioi-tinh' class='form-control input-sm'><option value='MR'>MR (Quý ông)</option><option value='MRS'>MRS (Quý bà)</option><option value='MS'>MS (Quý cô)</option><option value='MSTR'>MSTR (Bé trai)</option><option value='MISS'>MISS (Bé gái)</option><option value='eMSTR'>eMSTR (Em bé trai)</option><option value='eMISS'>eMISS (Em bé gái)</option></select></div>" +
 				"<div class='col-xs-3 ngay-sinh'><input type='date' id='ngay-sinh' class='form-control input-sm' /></div>" +
 				"<div class='col-xs-1 hl-di'><input type='number' id='hl-di' class='form-control input-sm' /></div>" +
 				"<div class='col-xs-1 hl-ve'><input type='number' id='hl-ve' class='form-control input-sm' /></div>" +
@@ -323,7 +325,7 @@ $(document).ready(() => {
 	$("#btnExcelHelp").on("click", (e) =>
 		alert(
 			"Copy nội dung từ file excel dán vào ô bên cạnh để xử lý.\n" +
-				"Các cột trong Excel:\n1. Họ tên\n2. Giới tính: MR, MRS, MS, MSTR, MISS\n3. Ngày sinh (dạng dd/mm/yyyy hoặc yyyy-mm-dd)\n4. Hành lý đi\n5. Hành lý về"
+				"Các cột trong Excel:\n1. Họ tên\n2. Giới tính: MR, MRS, MS, MSTR, MISS, eMSTR, eMISS\n3. Ngày sinh (dạng dd/mm/yyyy hoặc yyyy-mm-dd)\n4. Hành lý đi\n5. Hành lý về"
 		)
 	);
 }); // End ready

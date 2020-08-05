@@ -9,6 +9,7 @@ const pageState = new PageState();
 
 const checkAdult = (hanhkhach) => hanhkhach.gioitinh != "MISS" && hanhkhach.gioitinh != "MSTR";
 const checkChild = (hanhkhach) => hanhkhach.gioitinh == "MISS" || hanhkhach.gioitinh == "MSTR";
+const checkInfant = (hanhkhach) => hanhkhach.gioitinh == "eMISS" || hanhkhach.gioitinh == "eMSTR";
 const checkCheck = (hanhkhach) => hanhkhach.check;
 
 const convertDate = (s) => {
@@ -61,25 +62,27 @@ const vj = () => {
 		document.getElementById("txtPax1_Phone2").dispatchEvent(evt);
 
 		let cnt = 1;
-		let child = $("table#tblPaxCountsInfo td:nth-child(3) span").text();
+		let child = parseInt($("table#tblPaxCountsInfo td:nth-child(3)").text().slice(-1));
 		let cntchild = 1;
 		request.hanhkhach.forEach((value, ind) => {
 			if (!value.check) return;
-			if ($(`#txtPax${cnt}_LName`).length > 0) {
+			if (!checkInfant(value) && $(`#txtPax${cnt}_LName`).length > 0) {
+				// Người lớn và trẻ em
 				if (value.gioitinh == "MR") $(`select#txtPax${cnt}_Gender`).val("M");
 				else $(`select#txtPax${cnt}_Gender`).val("F");
 
 				$(`#txtPax${cnt}_LName`).val(value.hoten.split(" ")[0]);
 				$(`#txtPax${cnt}_FName`).val(value.hoten.split(" ").slice(1).join(" "));
 				cnt++;
-			} else if (cntchild <= child) {
-				// Hết người lớn
+				request.hanhkhach[ind].check = false;
+			} else if (checkInfant(value) && cntchild <= child) {
+				// Hết người lớn => EM BÉ
 				$(`#chkPax${cntchild}_Infant`)[0].click();
 				$(`#txtPax${cntchild}_Infant_FName`).val(value.hoten.split(" ")[0]);
 				$(`#txtPax${cntchild}_Infant_LName`).val(value.hoten.split(" ").slice(1).join(" "));
 				cntchild++;
+				request.hanhkhach[ind].check = false;
 			}
-			request.hanhkhach[ind].check = false;
 		});
 
 		setTimeout(() => {
@@ -219,8 +222,8 @@ const muadi = () => {
 						$("#lastname_chd_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
 						cntC++;
 						request.hanhkhach[ind].check = false;
-					} else if (checkChild(value) && $("#firstname_inf_" + cntI).length > 0) {
-						$("#title_inf_" + cntI).val(value.gioitinh.toLowerCase());
+					} else if (checkInfant(value) && $("#firstname_inf_" + cntI).length > 0) {
+						$("#title_inf_" + cntI).val(value.gioitinh.substring(1).toLowerCase());
 						$("#firstname_inf_" + cntI).val(value.hoten.split(" ")[0]);
 						$("#lastname_inf_" + cntI).val(value.hoten.split(" ").slice(1).join(" "));
 						cntI++;
@@ -617,6 +620,7 @@ const xuatve = () => {
 
 		let cntA = 0;
 		let cntC = 0;
+		let cntI = 0;
 		request.hanhkhach.forEach((value, ind) => {
 			if (!value.check) return;
 			if (checkAdult(value) && $("#ContentPlaceHolder1_rptADT_ddlGender_" + cntA).length > 0) {
@@ -631,6 +635,13 @@ const xuatve = () => {
 				$("#ContentPlaceHolder1_rptCHD_txtDemTen_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
 				$("#ContentPlaceHolder1_rptCHD_txtBD_" + cntC).val(convertDate(value.ngaysinh));
 				cntC++;
+				request.hanhkhach[ind].check = false;
+			} else if (checkInfant(value) && $("#ContentPlaceHolder1_rptINF_ddlGender_" + cntI).length > 0) {
+				$("#ContentPlaceHolder1_rptINF_ddlGender_" + cntC).val(value.gioitinh === "eMSTR" ? 0 : 1);
+				$("#ContentPlaceHolder1_rptINF_txtHo_" + cntC).val(value.hoten.split(" ")[0]);
+				$("#ContentPlaceHolder1_rptINF_txtDemTen_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
+				$("#ContentPlaceHolder1_rptINF_txtBD_" + cntC).val(convertDate(value.ngaysinh));
+				cntI++;
 				request.hanhkhach[ind].check = false;
 			}
 		});
@@ -681,6 +692,7 @@ const bb = () => {
 
 		let cntA = 0;
 		let cntC = 0;
+		let cntI = 0;
 		request.hanhkhach.forEach((value, ind) => {
 			if (!value.check) return;
 			if (checkAdult(value) && $("#passengerAdult-" + cntA + "-suffix").length > 0) {
@@ -695,6 +707,13 @@ const bb = () => {
 				$("#passengerChild-" + cntC + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
 				$("#passengerChild-" + cntC + "-birthday").val(convertDate(value.ngaysinh));
 				cntC++;
+				request.hanhkhach[ind].check = false;
+			} else if (checkInfant(value) && $("#passengerInfant-" + cntI + "-suffix").length > 0) {
+				$("#passengerInfant-" + cntI + "-suffix").val(value.gioitinh.substring(1));
+				$("#passengerInfant-" + cntI + "-surname").val(value.hoten.split(" ")[0]);
+				$("#passengerInfant-" + cntI + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
+				$("#passengerInfant-" + cntI + "-birthday").val(convertDate(value.ngaysinh));
+				cntI++;
 				request.hanhkhach[ind].check = false;
 			}
 		});
