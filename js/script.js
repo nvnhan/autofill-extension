@@ -80,6 +80,15 @@ const vj = () => {
 				$(`#chkPax${cntchild}_Infant`)[0].click();
 				$(`#txtPax${cntchild}_Infant_FName`).val(value.hoten.split(" ")[0]);
 				$(`#txtPax${cntchild}_Infant_LName`).val(value.hoten.split(" ").slice(1).join(" "));
+
+				let da = value.ngaysinh.split("-");
+				const d = parseInt(da[2]);
+				const m = parseInt(da[1]);
+				const y = parseInt(da[0]);
+				$(`#txtPax${cntchild}_Infant_DOB_Day`).val(d < 10 ? "0" + d : d);
+				$(`#txtPax${cntchild}_Infant_DOB_Month`).val(m < 10 ? "0" + m : m);
+				$(`#txtPax${cntchild}_Infant_DOB_Year`).val(y);
+
 				cntchild++;
 				request.hanhkhach[ind].check = false;
 			}
@@ -226,6 +235,7 @@ const muadi = () => {
 						$("#title_inf_" + cntI).val(value.gioitinh.substring(1).toLowerCase());
 						$("#firstname_inf_" + cntI).val(value.hoten.split(" ")[0]);
 						$("#lastname_inf_" + cntI).val(value.hoten.split(" ").slice(1).join(" "));
+						$("#birthday_inf_" + cntI).val(convertDate(value.ngaysinh));
 						cntI++;
 						request.hanhkhach[ind].check = false;
 					}
