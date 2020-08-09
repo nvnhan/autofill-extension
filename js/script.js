@@ -64,34 +64,39 @@ const vj = () => {
 		document.getElementById("txtPax1_Phone2").dispatchEvent(evt);
 
 		let cnt = 1;
-		let child = parseInt($("table#tblPaxCountsInfo td:nth-child(3)").text().slice(-1));
-		let cntchild = 1;
+		let cntA = parseInt($("table#tblPaxCountsInfo td:nth-child(1)").text().slice(-1));
+		let cntC = cntA + parseInt($("table#tblPaxCountsInfo td:nth-child(2)").text().slice(-1));
+		let infant = parseInt($("table#tblPaxCountsInfo td:nth-child(3)").text().slice(-1));
+		let cntI = 1;
 		request.hanhkhach.forEach((value, ind) => {
 			if (!value.check) return;
 			if (!checkInfant(value) && $(`#txtPax${cnt}_LName`).length > 0) {
 				// Người lớn và trẻ em
-				if (value.gioitinh == "MR") $(`select#txtPax${cnt}_Gender`).val("M");
-				else $(`select#txtPax${cnt}_Gender`).val("F");
+				if ((cnt <= cntA && checkAdult(value)) || (cnt <= cntC && checkChild(value))) {
+					if (checkAdult(value))
+						if (value.gioitinh == "MR") $(`select#txtPax${cnt}_Gender`).val("M");
+						else $(`select#txtPax${cnt}_Gender`).val("F");
 
-				$(`#txtPax${cnt}_LName`).val(value.hoten.split(" ")[0]);
-				$(`#txtPax${cnt}_FName`).val(value.hoten.split(" ").slice(1).join(" "));
-				cnt++;
-				request.hanhkhach[ind].check = false;
-			} else if (checkInfant(value) && cntchild <= child) {
+					$(`#txtPax${cnt}_LName`).val(value.hoten.split(" ")[0]);
+					$(`#txtPax${cnt}_FName`).val(value.hoten.split(" ").slice(1).join(" "));
+					cnt++;
+					request.hanhkhach[ind].check = false;
+				}
+			} else if (checkInfant(value) && cntI <= infant) {
 				// Hết người lớn => EM BÉ
-				$(`#chkPax${cntchild}_Infant`)[0].click();
-				$(`#txtPax${cntchild}_Infant_FName`).val(value.hoten.split(" ")[0]);
-				$(`#txtPax${cntchild}_Infant_LName`).val(value.hoten.split(" ").slice(1).join(" "));
+				$(`#chkPax${cntI}_Infant`)[0].click();
+				$(`#txtPax${cntI}_Infant_FName`).val(value.hoten.split(" ")[0]);
+				$(`#txtPax${cntI}_Infant_LName`).val(value.hoten.split(" ").slice(1).join(" "));
 
 				let da = value.ngaysinh.split("-");
 				const d = parseInt(da[2]);
 				const m = parseInt(da[1]);
 				const y = parseInt(da[0]);
-				$(`#txtPax${cntchild}_Infant_DOB_Day`).val(d < 10 ? "0" + d : d);
-				$(`#txtPax${cntchild}_Infant_DOB_Month`).val(m < 10 ? "0" + m : m);
-				$(`#txtPax${cntchild}_Infant_DOB_Year`).val(y);
+				$(`#txtPax${cntI}_Infant_DOB_Day`).val(d < 10 ? "0" + d : d);
+				$(`#txtPax${cntI}_Infant_DOB_Month`).val(m < 10 ? "0" + m : m);
+				$(`#txtPax${cntI}_Infant_DOB_Year`).val(y);
 
-				cntchild++;
+				cntI++;
 				request.hanhkhach[ind].check = false;
 			}
 		});
