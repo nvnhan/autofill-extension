@@ -41,13 +41,15 @@ const vj = () => {
 
 	const fill = function () {
 		const request = pageState.getState().request;
+		let phone1 = request.sdt,
+			phone2 = request.sdt;
 
 		if (/booking/gi.test(url)) {
 			// Nếu ở trang web (ko phải đại lý) thì mới thêm
 			$("#txtResContact_Name").val(request.tenkhachhang);
 			$("#txtResContact_EMail").val(request.email);
-			$("#txtResContact_Phone").val(request.sdt);
-		}
+		} else if (phone1.includes(",")) [phone1, phone2] = phone1.split(",");
+		$("#txtResContact_Phone").val(phone1);
 
 		$("#txtPax1_Addr1").val(request.diachi);
 		$("#txtPax1_City").val(request.diachi);
@@ -56,7 +58,7 @@ const vj = () => {
 
 		$($("span.mobileNumber")[0]).find("div.selected-flag")[0].click();
 		$($("ul.country-list")[0]).find("li[data-dial-code=84]")[0].click();
-		$("#txtPax1_Phone2").val(request.sdt);
+		$("#txtPax1_Phone2").val(phone2);
 		var evt = document.createEvent("KeyboardEvent");
 		evt.initEvent("change", true, true);
 		document.getElementById("txtPax1_Phone2").dispatchEvent(evt);
