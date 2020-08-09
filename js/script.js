@@ -647,10 +647,10 @@ const xuatve = () => {
 				cntC++;
 				request.hanhkhach[ind].check = false;
 			} else if (checkInfant(value) && $("#ContentPlaceHolder1_rptINF_ddlGender_" + cntI).length > 0) {
-				$("#ContentPlaceHolder1_rptINF_ddlGender_" + cntC).val(value.gioitinh === "eMSTR" ? 0 : 1);
-				$("#ContentPlaceHolder1_rptINF_txtHo_" + cntC).val(value.hoten.split(" ")[0]);
-				$("#ContentPlaceHolder1_rptINF_txtDemTen_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
-				$("#ContentPlaceHolder1_rptINF_txtBD_" + cntC).val(convertDate(value.ngaysinh));
+				$("#ContentPlaceHolder1_rptINF_ddlGender_" + cntI).val(value.gioitinh === "eMSTR" ? 0 : 1);
+				$("#ContentPlaceHolder1_rptINF_txtHo_" + cntI).val(value.hoten.split(" ")[0]);
+				$("#ContentPlaceHolder1_rptINF_txtDemTen_" + cntI).val(value.hoten.split(" ").slice(1).join(" "));
+				$("#ContentPlaceHolder1_rptINF_txtBD_" + cntI).val(convertDate(value.ngaysinh));
 				cntI++;
 				request.hanhkhach[ind].check = false;
 			}
