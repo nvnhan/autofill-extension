@@ -576,16 +576,25 @@ const vnabooking = () => {
 		$("#InfoPassener_Phone").val(request.sdt);
 
 		let cnt = 0;
+		let cntA = parseInt($("select#adult").val());
+		let cntC = cntA + parseInt($("select#child").val());
+		let cntI = cntC + parseInt($("select#infant").val());
 		request.hanhkhach.forEach((value, ind) => {
-			if (!value.check) return;
+			if (!value.check || cnt >= cntI) return;
 			if ($(`#InfoPassener_Passengers_${cnt}__Gender`).length > 0) {
-				$(`#InfoPassener_Passengers_${cnt}__Gender`).val(value.gioitinh);
-				$(`#InfoPassener_Passengers_${cnt}__Name`).val(value.hoten);
+				if ((cnt < cntA && checkAdult(value)) || (cnt < cntC && checkChild(value)) || (cnt < cntI && checkInfant(value))) {
+					$(`#InfoPassener_Passengers_${cnt}__Gender`).val(checkInfant(value) ? value.gioitinh.substring(1) : value.gioitinh);
+					$(`#InfoPassener_Passengers_${cnt}__Name`).val(value.hoten);
 
-				//TODO: Hành lý ký gửi đối vói một số hãng bay nhất định
+					if (checkInfant(value))
+						// Fill Infant birthday
+						$(`#InfoPassener_Passengers_${cnt}__Brith_Brithday`).val(value.ngaysinh.replace(/-/g, "/"));
 
-				cnt++;
-				request.hanhkhach[ind].check = false;
+					//TODO: Hành lý ký gửi đối vói một số hãng bay nhất định
+
+					cnt++;
+					request.hanhkhach[ind].check = false;
+				}
 			}
 		});
 
