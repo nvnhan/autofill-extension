@@ -64,9 +64,9 @@ const vj = () => {
 		document.getElementById("txtPax1_Phone2").dispatchEvent(evt);
 
 		let cnt = 1;
-		let cntA = parseInt($("table#tblPaxCountsInfo td:nth-child(1)").text().slice(-1));
-		let cntC = cntA + parseInt($("table#tblPaxCountsInfo td:nth-child(2)").text().slice(-1));
-		let infant = parseInt($("table#tblPaxCountsInfo td:nth-child(3)").text().slice(-1));
+		let cntA = parseInt($("table#tblPaxCountsInfo td:nth-child(1)").text().trim().slice(-2));
+		let cntC = cntA + parseInt($("table#tblPaxCountsInfo td:nth-child(2)").text().trim().slice(-2));
+		let infant = parseInt($("table#tblPaxCountsInfo td:nth-child(3)").text().trim().slice(-2));
 		let cntI = 1;
 		request.hanhkhach.forEach((value, ind) => {
 			if (!value.check) return;
