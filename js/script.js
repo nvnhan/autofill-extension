@@ -732,6 +732,7 @@ const bb = () => {
 				$("#passengerChild-" + cntC + "-surname").val(value.hoten.split(" ")[0]);
 				$("#passengerChild-" + cntC + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
 				$("#passengerChild-" + cntC + "-birthday").val(convertDate(value.ngaysinh));
+				$("#passengerChild-" + cntC + "-dob").val(convertDate(value.ngaysinh));
 				cntC++;
 				request.hanhkhach[ind].check = false;
 			} else if (checkInfant(value) && $("#passengerInfant-" + cntI + "-suffix").length > 0) {
@@ -739,6 +740,7 @@ const bb = () => {
 				$("#passengerInfant-" + cntI + "-surname").val(value.hoten.split(" ")[0]);
 				$("#passengerInfant-" + cntI + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
 				$("#passengerInfant-" + cntI + "-birthday").val(convertDate(value.ngaysinh));
+				$("#passengerInfant-" + cntI + "-dob").val(convertDate(value.ngaysinh));
 				cntI++;
 				request.hanhkhach[ind].check = false;
 			}
