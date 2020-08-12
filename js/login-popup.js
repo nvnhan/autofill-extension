@@ -305,6 +305,9 @@ $(document).ready(() => {
 		var data = e.originalEvent.clipboardData.getData("text");
 		var rows = data.split("\n").filter((e) => e != undefined && e != "");
 
+		// Chờ xử lý trên web
+		//
+		//
 		var hanhkhachs = [];
 		for (var y in rows) {
 			var cells = rows[y].split("\t");
