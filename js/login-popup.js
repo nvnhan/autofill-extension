@@ -302,26 +302,17 @@ $(document).ready(() => {
 	$("#txtExcel").on("paste", (e) => {
 		e.preventDefault();
 		// access the clipboard using the api
-		var data = e.originalEvent.clipboardData.getData("text");
-		var rows = data.split("\n").filter((e) => e != undefined && e != "");
+		let text = e.originalEvent.clipboardData.getData("text");
 
 		// Chờ xử lý trên web
 		//
-		//
-		var hanhkhachs = [];
-		for (var y in rows) {
-			var cells = rows[y].split("\t");
-			if (cells.length >= 2 && cells[0] != "")
-				hanhkhachs.push({
-					hoten: cells[0],
-					gioitinh: cells[1],
-					ngaysinh: convertDate(cells[2]),
-					hldi: parseInt(cells[3]),
-					hlve: parseInt(cells[4]),
-					check: true,
-				});
-		}
-		renderListHanhKhach(hanhkhachs);
+		$.ajax({
+			url: Config.host.api + "parcel",
+			contentType: "application/json",
+			data: { text },
+			success: (response) => response.success && renderListHanhKhach(response.data),
+			error: (error) => console.log(error),
+		});
 	});
 
 	$("#btnExcelHelp").on("click", (e) =>
