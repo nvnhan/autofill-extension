@@ -150,7 +150,7 @@ $(document).ready(() => {
 				$("#welcome").show();
 				$("#form-login").hide();
 				$("#username").text(data.user.hoten);
-				$("#ngayhethan").text(data.user.ngayhethan);
+				$("#songay").text(data.user.songay);
 
 				getCurrentTab((tab) => {
 					const url = tab.url;
@@ -216,38 +216,24 @@ $(document).ready(() => {
 		// Default admin
 		const defaultUser = {
 			username: "admin",
-			hoten: "Default admin",
-			ngayhethan: "31/12/2099",
+			hoten: "Default Admin",
+			songay: 99,
 		};
-		if (username === "admin" && password === "1") {
-			chrome.storage.local.set({ user: defaultUser }, () => {
-				render();
-			});
-		} else {
-			var ip = "";
-
-			$.getJSON("http://gd.geobytes.com/GetCityDetails", function (data) {
-				ip = data.geobytesipaddress;
+		if (username === "admin" && password === "1") chrome.storage.local.set({ user: defaultUser }, () => render());
+		else
+			$.getJSON("http://gd.geobytes.com/GetCityDetails", (data) => {
+				let ip = data.geobytesipaddress;
 
 				$.ajax({
 					url: Config.host.api + "login?username=" + username + "&password=" + password + "&ip=" + ip,
 					method: "GET",
 					dataType: "json",
 					contentType: "application/json",
-					// data: JSON.stringify({username, password})
 				}).then(
-					(credential) => {
-						console.log(credential);
-						chrome.storage.local.set({ user: credential }, () => {
-							render();
-						});
-					},
-					(jqXHR) => {
-						if (jqXHR.responseJSON !== undefined) $("#errorMsg").text(jqXHR.responseJSON.message).show();
-					}
+					(credential) => chrome.storage.local.set({ user: credential }, () => render()),
+					(jqXHR) => jqXHR.responseJSON !== undefined && $("#errorMsg").text(jqXHR.responseJSON.message).show()
 				);
 			});
-		}
 	});
 
 	$("#btnLogout").on("click", (e) => {
