@@ -6,10 +6,13 @@ const pageState = new PageState();
 pageState.onStateChange((state) => renderFollowBar(state));
 pageState.onFollowStateChange((followState) => renderFollowStateElements(followState));
 
+let stt = 1;
+let getCurrentFollowStateInterval = null;
+let ip = null;
+let user = null;
+
 const getCurrentTab = (callback) => chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT }, (tabs) => callback(tabs[0]));
 const canStart = (followState) => followState == "idle";
-
-let stt = 1;
 
 /**
  * Lấy dữ liệu từ form
@@ -137,103 +140,119 @@ const convertDate = (s) => {
 	return y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d);
 };
 
+const login = ({ username, password }) => {
+	$.ajax({
+		url: Config.host.api + "login?username=" + username + "&password=" + password + "&ip=" + ip,
+		method: "GET",
+		dataType: "json",
+		contentType: "application/json",
+		success: (credential) => chrome.storage.local.set({ user: credential }, () => render()),
+		error: (jqXHR) => jqXHR.responseJSON !== undefined && $("#errorMsg").text(jqXHR.responseJSON.message).show(),
+	});
+};
+
+const showLogin = () => {
+	$("#form-login").show();
+	$("#welcome").hide();
+	$("#input_username").val("");
+	$("#input_password").val("");
+	$("#errorMsg").text("").hide();
+};
+
+/**
+ * Khi bật tool => render lại giao diện của tool
+ */
+const render = () => {
+	if (getCurrentFollowStateInterval) clearInterval(getCurrentFollowStateInterval);
+	chrome.storage.local.get("user", (data) => {
+		if (data.user) {
+			user = data.user;
+			$("#welcome").show();
+			$("#form-login").hide();
+			$("#username").text(user.hoten);
+			$("#songay").text(user.songay);
+
+			getCurrentTab((tab) => {
+				const url = tab.url;
+				if (
+					1 ||
+					/vetot\.com\.vn/gi.test(url) ||
+					/holavietnam\.com\.vn/gi.test(url) ||
+					/muadi\.com\.vn/gi.test(url) ||
+					/onlinebookingticket\.vn/gi.test(url) ||
+					/onlineairticket\.vn/gi.test(url) ||
+					/bookingticket\.vn/gi.test(url) ||
+					/vnabooking/gi.test(url) ||
+					/vietjetair/gi.test(url)
+				) {
+					$(".content").show();
+					$("#error-page").hide();
+					// Get state of current tab from background.js
+					chrome.runtime.sendMessage({ action: "get-state", tab: tab }, (response) => {
+						if (!response.state.tenkhachhang) {
+							chrome.storage.local.get("ttlh", (data) => {
+								if (data.ttlh) {
+									response.state.request.tenkhachhang = data.ttlh.tenkhachhang;
+									response.state.request.diachi = data.ttlh.diachi;
+									response.state.request.sdt = data.ttlh.sdt;
+									response.state.request.email = data.ttlh.email;
+								}
+								pageState.setState(response.state);
+							});
+						} else pageState.setState(response.state);
+					});
+
+					getCurrentFollowStateInterval = setInterval(() => {
+						chrome.runtime.sendMessage({ action: "get-follow-state", tab: tab }, (response) =>
+							pageState.setFollowState(response.follow_state)
+						);
+					}, 500);
+				} else {
+					$(".content").hide();
+					$("#error-page").show();
+				}
+			});
+		} else showLogin();
+	});
+};
+
 $(document).ready(() => {
-	let getCurrentFollowStateInterval = null;
-
-	/**
-	 * Khi bật tool => render lại giao diện của tool
-	 */
-	const render = () => {
-		if (getCurrentFollowStateInterval) clearInterval(getCurrentFollowStateInterval);
-		chrome.storage.local.get("user", (data) => {
-			if (data.user) {
-				$("#welcome").show();
-				$("#form-login").hide();
-				$("#username").text(data.user.hoten);
-				$("#songay").text(data.user.songay);
-
-				getCurrentTab((tab) => {
-					const url = tab.url;
-					if (
-						1 ||
-						/vetot\.com\.vn/gi.test(url) ||
-						/holavietnam\.com\.vn/gi.test(url) ||
-						/muadi\.com\.vn/gi.test(url) ||
-						/onlinebookingticket\.vn/gi.test(url) ||
-						/onlineairticket\.vn/gi.test(url) ||
-						/bookingticket\.vn/gi.test(url) ||
-						/vnabooking/gi.test(url) ||
-						/vietjetair/gi.test(url)
-					) {
-						$(".content").show();
-						$("#error-page").hide();
-						// Get state of current tab from background.js
-						chrome.runtime.sendMessage({ action: "get-state", tab: tab }, (response) => {
-							if (!response.state.tenkhachhang) {
-								chrome.storage.local.get("ttlh", (data) => {
-									if (data.ttlh) {
-										response.state.request.tenkhachhang = data.ttlh.tenkhachhang;
-										response.state.request.diachi = data.ttlh.diachi;
-										response.state.request.sdt = data.ttlh.sdt;
-										response.state.request.email = data.ttlh.email;
-									}
-									pageState.setState(response.state);
-								});
-							} else pageState.setState(response.state);
-						});
-
-						getCurrentFollowStateInterval = setInterval(() => {
-							chrome.runtime.sendMessage({ action: "get-follow-state", tab: tab }, (response) =>
-								pageState.setFollowState(response.follow_state)
-							);
-						}, 500);
-					} else {
-						$(".content").hide();
-						$("#error-page").show();
-					}
-				});
-			} else {
-				$("#form-login").show();
-				$("#welcome").hide();
-				$("#input_username").val("");
-				$("#input_password").val("");
-				$("#errorMsg").text("").hide();
-			}
-		});
-	};
-
 	render();
 
 	// Ấn nút theo dõi
 	///////////////////
-	$("#btnTriggerFollow").on("click", () => triggerFollow(pageState.getState()));
+	$("#btnTriggerFollow").on("click", () => {
+		// check login user in server
+		if (user !== null && user.token !== undefined && canStart(pageState.getState().result.follow_state))
+			$.ajax({
+				url: Config.host.api + "get-user",
+				method: "GET",
+				dataType: "json",
+				beforeSend: (xhr) => {
+					xhr.setRequestHeader("Authorization", "Bearer " + user.token);
+				},
+				success: () => triggerFollow(pageState.getState()),
+				error: () => showLogin(),
+			});
+		else triggerFollow(pageState.getState());
+	});
 
 	$("#btnLogin").on("click", (e) => {
 		e.preventDefault();
+		$("#errorMsg").hide();
 
 		let username = $("#input_username").val().trim();
 		let password = $("#input_password").val().trim();
-		// Default admin
-		const defaultUser = {
-			username: "admin",
-			hoten: "Default Admin",
-			songay: 99,
-		};
-		if (username === "admin" && password === "1") chrome.storage.local.set({ user: defaultUser }, () => render());
-		else
-			$.getJSON("http://gd.geobytes.com/GetCityDetails", (data) => {
-				let ip = data.geobytesipaddress;
-
-				$.ajax({
-					url: Config.host.api + "login?username=" + username + "&password=" + password + "&ip=" + ip,
-					method: "GET",
-					dataType: "json",
-					contentType: "application/json",
-				}).then(
-					(credential) => chrome.storage.local.set({ user: credential }, () => render()),
-					(jqXHR) => jqXHR.responseJSON !== undefined && $("#errorMsg").text(jqXHR.responseJSON.message).show()
-				);
-			});
+		if (username === "admin" && password === "1") {
+			// Default admin
+			const defaultUser = {
+				username: "admin",
+				hoten: "Default Admin",
+				songay: 99,
+			};
+			chrome.storage.local.set({ user: defaultUser }, () => render());
+		} else if (ip !== null) login({ username, password });
+		else $.getJSON("http://gd.geobytes.com/GetCityDetails", (data) => (ip = data.geobytesipaddress && login({ username, password })));
 	});
 
 	$("#btnLogout").on("click", (e) => {
