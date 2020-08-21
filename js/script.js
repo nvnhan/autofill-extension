@@ -754,7 +754,7 @@ const bb = () => {
 				let req = new RequestDecorator(request).withFilledAction().build(); // Gửi request về background
 				chrome.runtime.sendMessage(req, () => $("#proceed")[0].click()); // Click tiếp tục
 			}
-		}, 4000);
+		}, 2000);
 	};
 
 	const otherAction = () => {
@@ -790,7 +790,7 @@ const bb = () => {
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
 			case "filling":
-				fill();
+				setTimeout(() => fill(), 3000);
 				break;
 			case "filled":
 				otherAction();
