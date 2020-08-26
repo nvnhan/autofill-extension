@@ -731,16 +731,26 @@ const bb = () => {
 				$("#passengerChild-" + cntC + "-suffix").val(value.gioitinh);
 				$("#passengerChild-" + cntC + "-surname").val(value.hoten.split(" ")[0]);
 				$("#passengerChild-" + cntC + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
-				$("#passengerChild-" + cntC + "-birthday").val(convertDate(value.ngaysinh));
 				$("#passengerChild-" + cntC + "-dob").val(convertDate(value.ngaysinh));
+				$("#passengerChild-" + cntC + "-birthday").remove(); //val(convertDate(value.ngaysinh));
+				$("<input />")
+					.attr("id", "#passengerChild-" + cntC + "-birthday")
+					.attr("name", "tempChildsDOB")
+					.attr("value", convertDate(value.ngaysinh))
+					.appendTo("#createItineraryConfirmForm");
 				cntC++;
 				request.hanhkhach[ind].check = false;
 			} else if (checkInfant(value) && $("#passengerInfant-" + cntI + "-suffix").length > 0) {
 				$("#passengerInfant-" + cntI + "-suffix").val(value.gioitinh.substring(1));
 				$("#passengerInfant-" + cntI + "-surname").val(value.hoten.split(" ")[0]);
 				$("#passengerInfant-" + cntI + "-firstname").val(value.hoten.split(" ").slice(1).join(" "));
-				$("#passengerInfant-" + cntI + "-birthday").val(convertDate(value.ngaysinh));
 				$("#passengerInfant-" + cntI + "-dob").val(convertDate(value.ngaysinh));
+				$("#passengerInfant-" + cntI + "-birthday").remove(); //val(convertDate(value.ngaysinh));
+				$("<input />")
+					.attr("id", "#passengerInfant-" + cntC + "-birthday")
+					.attr("name", "tempInfantsDOB")
+					.attr("value", convertDate(value.ngaysinh))
+					.appendTo("#createItineraryConfirmForm");
 				cntI++;
 				request.hanhkhach[ind].check = false;
 			}
@@ -790,7 +800,7 @@ const bb = () => {
 	loadCurrentStateTab((state) => {
 		switch (state.result.follow_state) {
 			case "filling":
-				setTimeout(() => fill(), 3000);
+				fill();
 				break;
 			case "filled":
 				otherAction();
@@ -803,22 +813,24 @@ const bb = () => {
 	});
 };
 
-if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
-	console.log("apply muadi.com.vn & onlinebookingticket.vn");
-	muadi();
-} else if (/onlineairticket\.vn/gi.test(url) || /bookingticket\.vn/gi.test(url)) {
-	console.log("apply onlineairticket & bookingticket.vn");
-	onlineAirTicket();
-} else if (/vnabooking/gi.test(url) || /onlineticket/gi.test(url)) {
-	console.log("apply vnabooking & onlineticket");
-	vnabooking();
-} else if (/vietjetair/gi.test(url)) {
-	console.log("apply vietjetair.com");
-	vj();
-} else if (/xuatve/gi.test(url)) {
-	console.log("apply xuatve.vn");
-	xuatve();
-} else if (/bambooairways/gi.test(url)) {
-	console.log("apply bambooairways.com");
-	bb();
-}
+$(document).ready(() => {
+	if (/muadi\.com\.vn/gi.test(url) || /onlinebookingticket\.vn/gi.test(url)) {
+		console.log("apply muadi.com.vn & onlinebookingticket.vn");
+		muadi();
+	} else if (/onlineairticket\.vn/gi.test(url) || /bookingticket\.vn/gi.test(url)) {
+		console.log("apply onlineairticket & bookingticket.vn");
+		onlineAirTicket();
+	} else if (/vnabooking/gi.test(url) || /onlineticket/gi.test(url)) {
+		console.log("apply vnabooking & onlineticket");
+		vnabooking();
+	} else if (/vietjetair/gi.test(url)) {
+		console.log("apply vietjetair.com");
+		vj();
+	} else if (/xuatve/gi.test(url)) {
+		console.log("apply xuatve.vn");
+		xuatve();
+	} else if (/bambooairways/gi.test(url)) {
+		console.log("apply bambooairways.com");
+		bb();
+	}
+});
