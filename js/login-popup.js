@@ -223,18 +223,17 @@ $(document).ready(() => {
 	///////////////////
 	$("#btnTriggerFollow").on("click", () => {
 		// check login user in server
-		if (user !== null && user.token !== undefined && canStart(pageState.getState().result.follow_state))
+		if (user !== null && user.token !== undefined && canStart(pageState.getState().result.follow_state)) {
+			$("body").css("cursor", "progress");
 			$.ajax({
 				url: Config.host.api + "get-user",
-				method: "GET",
-				dataType: "json",
 				beforeSend: (xhr) => {
 					xhr.setRequestHeader("Authorization", "Bearer " + user.token);
 				},
 				success: () => triggerFollow(pageState.getState()),
 				error: () => showLogin(),
-			});
-		else triggerFollow(pageState.getState());
+			}).always(() => $("body").css("cursor", "default"));
+		} else triggerFollow(pageState.getState());
 	});
 
 	$("#btnLogin").on("click", (e) => {
@@ -243,15 +242,16 @@ $(document).ready(() => {
 
 		let username = $("#input_username").val().trim();
 		let password = $("#input_password").val().trim();
-		if (username === "admin" && password === "1") {
-			// Default admin
-			const defaultUser = {
-				username: "admin",
-				hoten: "Default Admin",
-				songay: 99,
-			};
-			chrome.storage.local.set({ user: defaultUser }, () => render());
-		} else if (ip !== null) login({ username, password });
+		// if (username === "admin" && password === "1") {
+		// 	// Default admin
+		// 	const defaultUser = {
+		// 		username: "admin",
+		// 		hoten: "Default Admin",
+		// 		songay: 99,
+		// 	};
+		// 	chrome.storage.local.set({ user: defaultUser }, () => render());
+		// } else
+		if (ip !== null) login({ username, password });
 		else $.getJSON("http://gd.geobytes.com/GetCityDetails", (data) => (ip = data.geobytesipaddress && login({ username, password })));
 	});
 
@@ -306,6 +306,7 @@ $(document).ready(() => {
 
 	$("#txtExcel").on("paste", (e) => {
 		e.preventDefault();
+		$("body").css("cursor", "progress");
 		// access the clipboard using the api
 		let text = e.originalEvent.clipboardData.getData("text");
 
@@ -314,10 +315,13 @@ $(document).ready(() => {
 		$.ajax({
 			url: Config.host.api + "parcel",
 			contentType: "application/json",
+			beforeSend: (xhr) => {
+				xhr.setRequestHeader("Authorization", "Bearer " + user.token);
+			},
 			data: { text },
 			success: (response) => response.success && renderListHanhKhach(response.data),
-			error: (error) => console.log(error),
-		});
+			error: () => showLogin(),
+		}).always(() => $("body").css("cursor", "default"));
 	});
 
 	$("#btnExcelHelp").on("click", (e) =>
