@@ -634,7 +634,8 @@ const xuatve = () => {
 	const start = () => {
 		const request = pageState.getState().request;
 		const req = new RequestDecorator(request).withFillingAction().build(); // Gửi request về background
-		chrome.runtime.sendMessage(req, (response) => $("#ContentPlaceHolder1_btnContinue")[0].click()); // Click tiếp tục để đến trang fill
+		// Bỏ sự kiện click mặc định của web
+		chrome.runtime.sendMessage(req, () => $("#ContentPlaceHolder1_btnContinue").unbind("click").click()); // Click tiếp tục để đến trang fill
 	};
 
 	const fill = () => {
