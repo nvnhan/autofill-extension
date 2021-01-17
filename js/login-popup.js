@@ -242,15 +242,15 @@ $(document).ready(() => {
 
 		let username = $("#input_username").val().trim();
 		let password = $("#input_password").val().trim();
-		// if (username === "admin" && password === "1") {
-		// 	// Default admin
-		// 	const defaultUser = {
-		// 		username: "admin",
-		// 		hoten: "Default Admin",
-		// 		songay: 99,
-		// 	};
-		// 	chrome.storage.local.set({ user: defaultUser }, () => render());
-		// } else
+		if (username === "admin" && password === "1") {
+			// Default admin
+			const defaultUser = {
+				username: "admin",
+				hoten: "Default Admin",
+				songay: 99,
+			};
+			chrome.storage.local.set({ user: defaultUser }, () => render());
+		} else
 		if (ip !== null) login({ username, password });
 		else $.getJSON("http://gd.geobytes.com/GetCityDetails", (data) => (ip = data.geobytesipaddress && login({ username, password })));
 	});

@@ -33,7 +33,8 @@
 				"*://onlineticket.com.vn/*",
 				"*://vnabooking.vn/*",
 				"*://booking.vietjetair.com/*",
-				"*://agents.vietjetair.com/*"
+				"*://agents.vietjetair.com/*",
+				"*://fly.vietnamairlines.com/*"
 			]
 		}
 	]
