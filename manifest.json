@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Auto Fill",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "Công cụ tự động điền thông tin liên hệ khi đặt vé máy bay",
 	"browser_action": {
 		"default_popup": "login-popup.html"
@@ -22,7 +22,19 @@
 
 	"content_scripts": [
 		{
-			"js": ["js/jquery.js", "js/config.js", "js/util-classes.js", "js/script.js"],
+			"js": [
+				"js/jquery.js",
+				"js/config.js",
+				"js/util-classes.js",
+				"js/pages/bb.js",
+				"js/pages/muadi.js",
+				"js/pages/onlineAirTicket.js",
+				"js/pages/vj.js",
+				"js/pages/vna.js",
+				"js/pages/vnabooking.js",
+				"js/pages/xuatve.js",
+				"js/script.js"
+			],
 			"matches": [
 				"*://www.bambooairways.com/*",
 				"*://xuatve.vn/*",
