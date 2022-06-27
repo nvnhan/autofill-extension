@@ -37,6 +37,7 @@ const muadi = () => {
 						$("#title_chd_" + cntC).val(value.gioitinh.toLowerCase());
 						$("#firstname_chd_" + cntC).val(value.hoten.split(" ")[0]);
 						$("#lastname_chd_" + cntC).val(value.hoten.split(" ").slice(1).join(" "));
+						$("#birthday_chd_" + cntI).val(convertDate(value.ngaysinh));
 						cntC++;
 						request.hanhkhach[ind].check = false;
 					} else if (checkInfant(value) && $("#firstname_inf_" + cntI).length > 0) {
